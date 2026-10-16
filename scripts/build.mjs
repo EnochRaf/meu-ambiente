@@ -7,7 +7,7 @@ import { cpSync, rmSync, mkdirSync, readdirSync, readFileSync, existsSync, statS
 import { join, dirname, resolve, relative } from 'node:path';
 
 const ROOT = resolve(new URL('..', import.meta.url).pathname), OUT = join(ROOT, 'dist');
-const SITE = ['index.html', 'style.css', 'src', 'assets'];
+const SITE = ['index.html', 'style.css', 'src', 'assets', 'favicon.ico', 'favicon.svg', 'apple-touch-icon.png', 'site.webmanifest'];
 
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT);

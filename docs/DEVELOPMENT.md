@@ -195,4 +195,6 @@ How the app works and where things are. The short version is in the README.
   `assets.mjs` and `views.mjs` (the CC0 asset pipelines; `hdr.mjs` reads the
   panoramas), `ui-pictures.mjs` and `template-thumbs.mjs` (interface pictures),
   `smoke.mjs` (browser checks), `shoot.mjs` and `ui-shots.mjs` (screenshots),
-  `measure.mjs` (frame rate, redraws, GPU work, memory)
+  `measure.mjs` (frame rate, redraws, GPU work, memory), `brand.mjs` (the
+  favicons, app icons and the 1200 × 630 link preview image in `assets/brand/`,
+  rendered from the running app; the link preview tags are in `index.html`)

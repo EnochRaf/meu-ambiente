@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3cc4a2"/><stop offset="1" stop-color="#14826a"/></linearGradient></defs>
+  <rect width="40" height="40" rx="12" fill="url(#g)"/>
+  <!-- a room seen from above: two walls and a floor, a window in the right wall -->
+  <path d="M9 15.5 20 9.5v11.2L9 26.7z" fill="#fff" fill-opacity=".62"/>
+  <path d="M20 9.5 31 15.5v11.2L20 20.7z" fill="#fff" fill-opacity=".86"/>
+  <path d="M9 26.7 20 20.7l11 6L20 32.6z" fill="#fff"/>
+  <path d="M24 16.2l3.4 1.9v3.6L24 19.8z" fill="#14826a" fill-opacity=".55"/>
+</svg>
