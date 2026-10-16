@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meu Ambiente</title>
+<meta name="description" content="Meu Ambiente: design and furnish your rooms in 3D.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22%3E   %3Cdefs%3E%3ClinearGradient id=%22f%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22%3E%3Cstop offset=%220%22 stop-color=%22%233cc4a2%22/%3E%3Cstop offset=%221%22 stop-color=%22%2314826a%22/%3E%3C/linearGradient%3E%3C/defs%3E   %3Crect width=%2240%22 height=%2240%22 rx=%2212%22 fill=%22url%28%23f%29%22/%3E   %3C%21-- a room seen from above: two walls and a floor, a window in the right wall --%3E   %3Cpath d=%22M9 15.5 20 9.5v11.2L9 26.7z%22 fill=%22%23fff%22 fill-opacity=%22.62%22/%3E   %3Cpath d=%22M20 9.5 31 15.5v11.2L20 20.7z%22 fill=%22%23fff%22 fill-opacity=%22.86%22/%3E   %3Cpath d=%22M9 26.7 20 20.7l11 6L20 32.6z%22 fill=%22%23fff%22/%3E   %3Cpath d=%22M24 16.2l3.4 1.9v3.6L24 19.8z%22 fill=%22%2314826a%22 fill-opacity=%22.55%22/%3E %3C/svg%3E ">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+  // the interface theme, before first paint: light, dark, or the computer's setting
+  try { var m = localStorage.getItem('roomsmith:theme'); document.documentElement.dataset.theme = m === 'light' || m === 'dark' ? m : (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); } catch (e) {}
+</script>
+<link rel="stylesheet" href="style.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.183.2/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.183.2/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-rooms" viewBox="0 0 24 24"><path d="M4 11 12 4l8 7v8.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19.5z"/><path d="M9.5 21v-5.5h5V21"/></symbol>
+  <symbol id="i-furniture" viewBox="0 0 24 24"><path d="M5.5 11V8.2a3 3 0 0 1 3-3h7a3 3 0 0 1 3 3V11"/><path d="M3.5 12.5a1.6 1.6 0 0 1 3.2 0V14h10.6v-1.5a1.6 1.6 0 0 1 3.2 0V17a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/><path d="M6 19v1.8M18 19v1.8"/></symbol>
+  <symbol id="i-materials" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7.5" height="7.5" rx="2"/><rect x="13" y="3.5" width="7.5" height="7.5" rx="2"/><rect x="3.5" y="13" width="7.5" height="7.5" rx="2"/><path d="M13 16.8c0-1.9 1.6-3.8 3.7-3.8s3.8 1.9 3.8 3.8-1.7 3.7-3.8 3.7S13 18.7 13 16.8z"/></symbol>
+  <symbol id="i-atmo" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.8v2.1M12 19.1v2.1M2.8 12h2.1M19.1 12h2.1M5.5 5.5 7 7M17 17l1.5 1.5M5.5 18.5 7 17M17 7l1.5-1.5"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M9.7 9.5a2.4 2.4 0 1 1 3.5 2.1c-.8.4-1.2 1-1.2 1.9M12 16.6h.01"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></symbol>
+  <symbol id="i-redo" viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6H8l1.5-2h5L16 6h1.5A2.5 2.5 0 0 1 20 8.5v9a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M5 13v5.5A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5V13"/></symbol>
+  <symbol id="i-turn" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4.5V9h-4.5"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6.5A2.5 2.5 0 0 0 13.5 4h-7A2.5 2.5 0 0 0 4 6.5v7A2.5 2.5 0 0 0 6.5 16H8"/></symbol>
+  <symbol id="i-material" viewBox="0 0 24 24"><path d="M12 3.5s6 6.2 6 10.6a6 6 0 0 1-12 0C6 9.7 12 3.5 12 3.5z"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-photo" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="m21 15-4.5-4.5L9 18"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-recentre" viewBox="0 0 24 24"><path d="M4 9V5h4M20 9V5h-4M4 15v4h4M20 15v4h-4"/><circle cx="12" cy="12" r="2.5"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.3 2.4 3.4 5.2 3.4 8.5s-1.1 6.1-3.4 8.5M12 3.5C9.7 5.9 8.6 8.7 8.6 12s1.1 6.1 3.4 8.5"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.8v2M12 19.2v2M2.8 12h2M19.2 12h2M5.5 5.5l1.4 1.4M17.1 17.1l1.4 1.4M5.5 18.5l1.4-1.4M17.1 6.9l1.4-1.4"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M19.5 14.6A7.8 7.8 0 0 1 9.4 4.5a7.8 7.8 0 1 0 10.1 10.1z"/></symbol>
+  <symbol id="i-collapse" viewBox="0 0 24 24"><path d="m11 17-5-5 5-5M18 17l-5-5 5-5"/></symbol>
+  <symbol id="i-full" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></symbol>
+  <symbol id="i-panels" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M9.5 4.5v15"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></symbol>
+  <symbol id="i-save" viewBox="0 0 24 24"><path d="M6 4h9l3 3v11.5A1.5 1.5 0 0 1 16.5 20h-9A1.5 1.5 0 0 1 6 18.5z"/><path d="M9 4v5h6"/></symbol>
+</svg>
+
+<main id="viewport" data-i18n-attr="aria-label:app.viewport"></main>
+<div id="loading"><div><svg class="logo" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">   <defs><linearGradient id="logo-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3cc4a2"/><stop offset="1" stop-color="#14826a"/></linearGradient></defs>   <rect width="40" height="40" rx="12" fill="url(#logo-g)"/>   <!-- a room seen from above: two walls and a floor, a window in the right wall -->   <path d="M9 15.5 20 9.5v11.2L9 26.7z" fill="#fff" fill-opacity=".62"/>   <path d="M20 9.5 31 15.5v11.2L20 20.7z" fill="#fff" fill-opacity=".86"/>   <path d="M9 26.7 20 20.7l11 6L20 32.6z" fill="#fff"/>   <path d="M24 16.2l3.4 1.9v3.6L24 19.8z" fill="#14826a" fill-opacity=".55"/> </svg> <span data-i18n="app.loading">Setting up your room…</span></div></div>
+
+<nav id="rail" class="rail" aria-label="Meu Ambiente">
+  <div class="rail-logo" title="Meu Ambiente"><svg class="logo" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">   <defs><linearGradient id="logo-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3cc4a2"/><stop offset="1" stop-color="#14826a"/></linearGradient></defs>   <rect width="40" height="40" rx="12" fill="url(#logo-g)"/>   <!-- a room seen from above: two walls and a floor, a window in the right wall -->   <path d="M9 15.5 20 9.5v11.2L9 26.7z" fill="#fff" fill-opacity=".62"/>   <path d="M20 9.5 31 15.5v11.2L20 20.7z" fill="#fff" fill-opacity=".86"/>   <path d="M9 26.7 20 20.7l11 6L20 32.6z" fill="#fff"/>   <path d="M24 16.2l3.4 1.9v3.6L24 19.8z" fill="#14826a" fill-opacity=".55"/> </svg> </div>
+  <button class="rail-btn" data-drawer="rooms" aria-controls="drawer"><svg><use href="#i-rooms"/></svg><span data-i18n="nav.rooms">Rooms</span></button>
+  <button class="rail-btn" data-drawer="furniture" aria-controls="drawer"><svg><use href="#i-furniture"/></svg><span data-i18n="nav.furniture">Furniture</span></button>
+  <button class="rail-btn" data-drawer="materials" aria-controls="drawer"><svg><use href="#i-materials"/></svg><span data-i18n="nav.materials">Materials</span></button>
+  <button class="rail-btn" data-drawer="atmosphere" aria-controls="drawer"><svg><use href="#i-atmo"/></svg><span data-i18n="nav.atmosphere">Atmosphere</span></button>
+  <div class="rail-gap"></div>
+  <button class="rail-btn" id="full-view" data-i18n-attr="data-tip:fullView;data-tip-sub:fullView.tip"><svg><use href="#i-full"/></svg><span data-i18n="fullView">Full view</span></button>
+  <button class="rail-btn" data-drawer="settings" aria-controls="drawer"><svg><use href="#i-settings"/></svg><span data-i18n="nav.settings">Settings</span></button>
+  <button class="rail-btn" id="help" data-i18n-attr="data-tip:nav.help;data-tip-sub:help.tip"><svg><use href="#i-help"/></svg><span data-i18n="nav.help">Help</span></button>
+</nav>
+<aside id="drawer" class="drawer" data-i18n-attr="aria-label:app.options">
+  <button id="drawer-close" class="drawer-close" data-i18n-attr="aria-label:collapse;data-tip:collapse;data-tip-sub:collapse.tip"><svg><use href="#i-collapse"/></svg></button>
+  <div id="drawer-body" class="drawer-body"></div>
+</aside>
+
+<header class="actions">
+  <button id="undo" class="act" data-i18n-attr="title:action.undo.tip"><svg><use href="#i-undo"/></svg><span data-i18n="action.undo">Undo</span></button>
+  <button id="redo" class="act" data-i18n-attr="title:action.redo.tip"><svg><use href="#i-redo"/></svg><span data-i18n="action.redo">Redo</span></button>
+  <i class="act-sep"></i>
+  <button id="lang-toggle" class="act lang-btn"><svg><use href="#i-globe"/></svg><span>PT</span></button>
+  <button id="theme-toggle" class="act icon-only"><svg class="when-light"><use href="#i-moon"/></svg><svg class="when-dark"><use href="#i-sun"/></svg></button>
+  <button id="save-image" class="act" data-i18n-attr="title:action.saveImage.tip"><svg><use href="#i-camera"/></svg><span data-i18n="action.saveImage">Save image</span></button>
+  <button id="share" class="act primary" data-i18n-attr="title:action.share.tip"><svg><use href="#i-share"/></svg><span data-i18n="action.share">Share</span></button>
+</header>
+<button id="show-ui" class="show-ui" data-i18n-attr="data-tip:showPanels.tipTitle;data-tip-sub:showPanels.tip"><svg><use href="#i-panels"/></svg><span data-i18n="showPanels">Show panels</span></button>
+<button id="reset-view" class="recentre" data-i18n-attr="title:recentre.tip"><svg><use href="#i-recentre"/></svg><span data-i18n="recentre">Recentre</span></button>
+
+<div id="piece-bar" class="ctx" role="toolbar" data-i18n-attr="aria-label:toolbar.label">
+  <span id="pb-name" class="ctx-name"></span>
+  <i class="ctx-sep"></i>
+  <button id="pb-rot" data-i18n-attr="title:toolbar.turn.tip"><svg><use href="#i-turn"/></svg><span data-i18n="toolbar.turn">Turn</span></button>
+  <button id="pb-dup" data-i18n-attr="title:toolbar.copy.tip"><svg><use href="#i-copy"/></svg><span data-i18n="toolbar.copy">Copy</span></button>
+  <button id="pb-color" data-i18n-attr="title:toolbar.material.tip"><svg><use href="#i-material"/></svg><span data-i18n="toolbar.material">Material</span></button>
+  <button id="pb-edit" data-i18n-attr="title:toolbar.edit.tip"><svg><use href="#i-edit"/></svg><span data-i18n="toolbar.edit">Edit</span></button>
+  <button id="pb-delete" class="danger" data-i18n-attr="title:toolbar.remove.tip"><svg><use href="#i-trash"/></svg><span data-i18n="action.remove">Remove</span></button>
+</div>
+<div id="measure" class="measure"></div>
+<div id="tip" class="tip" role="tooltip"></div>
+
+<div id="tour" class="tour">
+  <small id="tour-step"></small>
+  <strong id="tour-title"></strong>
+  <p id="tour-body"></p>
+  <div class="row"><button id="tour-skip" class="btn small" data-i18n="tour.skip">Skip</button><button id="tour-next" class="btn small dark">Next</button></div>
+</div>
+
+<dialog id="tpl-modal" class="glass modal gallery" aria-labelledby="tpl-title">
+  <div class="gallery-head">
+    <h3 id="tpl-title">Add a room</h3>
+    <div id="tpl-tabs" class="seg" role="tablist">
+      <button role="tab" data-tab="templates" class="on" data-i18n="gallery.tabTemplates">Start from a template</button>
+      <button role="tab" data-tab="empty" data-i18n="gallery.tabEmpty">Start empty</button>
+    </div>
+  </div>
+  <p id="tpl-sub" class="muted"></p>
+  <section id="tpl-gallery" class="tpl-gallery"></section>
+  <section id="tpl-empty" hidden><div id="type-cards" class="type-cards"></div></section>
+  <div id="tpl-confirm" class="confirm-bar" hidden><span id="tpl-confirm-text"></span><button id="tpl-confirm-no" class="btn small" data-i18n="gallery.keep">Keep my room</button><button id="tpl-confirm-yes" class="btn small primary" data-i18n="gallery.replace">Replace</button></div>
+  <div class="row right"><button id="tpl-close" class="btn" data-i18n="action.cancel">Cancel</button></div>
+</dialog>
+
+<dialog id="save-tpl-modal" class="glass modal save-tpl" aria-labelledby="save-tpl-title">
+  <h3 id="save-tpl-title" data-i18n="rooms.saveTemplate">Save this room as a template</h3>
+  <p class="muted" data-i18n="saveTpl.sub">It appears under My templates, in this browser, whenever you add a room.</p>
+  <img id="save-tpl-thumb" alt="">
+  <label class="field"><span data-i18n="saveTpl.name">Name</span><input id="save-tpl-name" maxlength="40" autocomplete="off"></label>
+  <label class="field"><span><span data-i18n="saveTpl.description">Description</span> <em class="muted" data-i18n="saveTpl.optional">optional</em></span><input id="save-tpl-blurb" maxlength="120" autocomplete="off"></label>
+  <div class="row right"><button id="save-tpl-cancel" class="btn" data-i18n="action.cancel">Cancel</button><button id="save-tpl-ok" class="btn primary" data-i18n="saveTpl.save">Save template</button></div>
+</dialog>
+
+<dialog id="photo-modal" class="glass modal photo">
+  <div class="steps"><b data-step="1" class="on" data-i18n="photo.step1">Photo</b><b data-step="2" data-i18n="photo.step2">Cutout</b><b data-step="3" data-i18n="photo.step3">Size and preview</b></div>
+
+  <section data-step="1">
+    <h3 data-i18n="photo.title">Add something from a photo</h3>
+    <div class="ph-grid">
+      <div>
+        <div id="ph-drop" class="drop"><canvas id="ph-thumb" width="240" height="240"></canvas><span class="drop-hint"><span data-i18n="photo.choose">Click to choose a photo</span><br><small data-i18n="photo.drop">or drop one here</small></span></div>
+        <input id="ph-file" type="file" accept="image/*" hidden>
+        <div id="ph-warnings"></div>
+      </div>
+      <div>
+        <h4 data-i18n="photo.bestResult">For the best result</h4>
+        <ul id="ph-tips" class="tips"></ul>
+        <p class="muted" data-i18n="photo.private">The background is removed in your browser; nothing is uploaded anywhere.</p>
+      </div>
+    </div>
+    <div class="row right"><button id="ph-cancel" class="btn" data-i18n="action.cancel">Cancel</button><button id="ph-next1" class="btn primary" disabled data-i18n="action.next">Next</button></div>
+  </section>
+
+  <section data-step="2" hidden>
+    <h3 data-i18n="photo.cleanTitle">Clean up the cutout</h3>
+    <div class="ph-grid wide">
+      <div>
+        <canvas id="ph-canvas" width="520" height="440" class="cut-canvas"></canvas>
+        <div id="ph-cutnote" class="notes"></div>
+      </div>
+      <div class="ph-side">
+        <div id="ph-mode" class="seg"><button data-mode="quick" class="on" data-i18n="photo.quick">Quick cutout</button><button data-mode="ai" data-i18n="photo.ai">AI cutout</button></div>
+        <p id="ph-ai-note" class="muted"></p>
+        <label id="ph-tol-row" class="field"><span data-i18n="photo.tolerance">Background tolerance</span><input id="ph-tol" type="range" min="5" max="120" value="40"></label>
+        <label class="field"><span><span data-i18n="photo.straighten">Straighten</span> <em id="ph-angle-v">0.0°</em></span><input id="ph-angle" type="range" min="-15" max="15" step="0.5" value="0"></label>
+        <h4 data-i18n="photo.touchUp">Touch up</h4>
+        <div id="ph-tools" class="seg"><button data-tool="erase" data-i18n="photo.erase">Erase</button><button data-tool="restore" data-i18n="photo.restore">Restore</button><button data-tool="crop" data-i18n="photo.crop">Crop</button></div>
+        <label id="ph-brush-row" class="field" hidden><span data-i18n="photo.brush">Brush size</span><input id="ph-brush" type="range" min="6" max="90" value="28"></label>
+        <div class="row"><button id="ph-clear-edits" class="btn small" data-i18n="photo.clear">Clear touch-ups</button><label class="check"><input id="ph-keep" type="checkbox"> <span data-i18n="photo.keepBg">Keep the background</span></label></div>
+      </div>
+    </div>
+    <div class="row right"><button id="ph-back2" class="btn" data-i18n="action.back">Back</button><button id="ph-next2" class="btn primary" disabled data-i18n="action.next">Next</button></div>
+  </section>
+
+  <section data-step="3" hidden>
+    <h3 data-i18n="photo.step3">Size and preview</h3>
+    <div class="ph-grid wide">
+      <div>
+        <div class="row"><label class="field grow"><span data-i18n="photo.whatIsIt">What is it?</span><select id="ph-cat"></select></label><button id="ph-detect" class="btn small" data-i18n="photo.detect">Detect</button></div>
+        <p id="ph-detect-note" class="muted"></p>
+        <p id="ph-typical" class="muted"></p>
+        <div id="ph-dims">
+          <div class="row2"><label class="field"><span data-i18n="saveTpl.name">Name</span><input id="ph-name" type="text" maxlength="40"></label><label class="field"><span data-i18n="photo.goesOn">Goes on</span><select id="ph-kind"><option value="floor" data-i18n="photo.onFloor">The floor</option><option value="wall" data-i18n="photo.onWall">A wall</option></select></label></div>
+          <div class="row3"><label class="field"><span data-i18n="dim.widthCm">Width (cm)</span><input id="ph-w" type="number" min="2" max="1000"></label><label class="field"><span id="ph-d-label" data-i18n="dim.depthCm">Depth (cm)</span><input id="ph-d" type="number" min="1" max="1000"></label><label class="field"><span data-i18n="dim.heightCm">Height (cm)</span><input id="ph-h" type="number" min="2" max="600"></label></div>
+          <label class="check"><input id="ph-lock" type="checkbox" checked> <span data-i18n="photo.keepProportions">Keep the photo's proportions</span></label>
+        </div>
+        <canvas id="ph-scale" width="300" height="200" class="scale-canvas"></canvas>
+      </div>
+      <div class="ph-side">
+        <h4 data-i18n="photo.howItLooks">How it will look</h4>
+        <div id="ph-variant" class="variants">
+          <button data-variant="photo" class="on"><img id="ph-prev-photo" alt=""><span data-i18n="photo.cutoutVariant">Photo cutout</span></button>
+          <button data-variant="3d" id="ph-var-3d"><img id="ph-prev-3d" alt=""><span data-i18n="photo.matchedVariant">Matched 3D</span></button>
+        </div>
+        <p id="ph-match-note" class="muted"></p>
+      </div>
+    </div>
+    <div class="row right"><button id="ph-back3" class="btn" data-i18n="action.back">Back</button><button id="ph-save" class="btn primary" data-i18n="photo.save">Add to my items</button></div>
+  </section>
+</dialog>
+
+<div id="toast" class="toast" role="status"></div>
+<script type="module" src="src/main.js"></script>
+</body>
+</html>

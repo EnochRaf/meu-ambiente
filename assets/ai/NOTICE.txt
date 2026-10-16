@@ -1,0 +1,13 @@
+u2netp.onnx — U²-Net-p, the small U²-Net salient object detection model.
+
+U²-Net: Going Deeper with Nested U-Structure for Salient Object Detection.
+Xuebin Qin, Zichen Zhang, Chenyang Huang, Masood Dehghan, Osmar R. Zaiane and
+Martin Jagersand. https://github.com/xuebinqin/U-2-Net
+
+Licensed under the Apache License, Version 2.0 (see LICENSE-Apache-2.0.txt).
+The weights are unmodified; this ONNX export is the one published by the rembg
+project (https://github.com/danielgatis/rembg, MIT), release v0.0.0,
+SHA-256 309c8469258dda742793dce0ebea8e6dd393174f89934733ecc8b14c76f4ddd8.
+
+Meu Ambiente uses it to cut furniture photos out of their background, in the
+browser, when WebGPU is not available.

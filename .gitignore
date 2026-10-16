@@ -1,0 +1,28 @@
+# dependencies and the downloaded raw assets (tools/assets.mjs and tools/views.mjs cache them here)
+node_modules/
+
+# production build
+dist/
+
+# Vercel
+.vercel/
+
+# environment and secrets
+.env
+.env.*
+*.pem
+*.key
+
+# logs and local leftovers
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# local screenshots and scratch output from the tools
+screens/
+shots/
+tmp/

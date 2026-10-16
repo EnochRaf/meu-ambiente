@@ -1,0 +1,1204 @@
+{
+ "models": {
+  "modern_arm_chair_01": {
+   "name": "Modern Arm Chair 01",
+   "bounds": {
+    "min": [
+     -0.4068,
+     0.0004,
+     -0.5755
+    ],
+    "max": [
+     0.4135,
+     1.0232,
+     0.4111
+    ]
+   },
+   "authors": [
+    "Vibrant Nordic"
+   ],
+   "dims_mm": [
+    820.3444182872772,
+    986.5616858005524,
+    1022.8520567470696
+   ],
+   "polycount": 8916,
+   "bytes": 271728,
+   "source": "https://polyhaven.com/a/modern_arm_chair_01",
+   "licence": "CC0 1.0"
+  },
+  "mid_century_lounge_chair": {
+   "name": "Mid Century Lounge Chair",
+   "bounds": {
+    "min": [
+     -0.5043,
+     0,
+     -0.6614
+    ],
+    "max": [
+     0.5043,
+     1.1691,
+     0.5289
+    ]
+   },
+   "authors": [
+    "Kuutti Siitonen"
+   ],
+   "dims_mm": [
+    1008.6143612861633,
+    1190.310776233673,
+    1169.0847246776136
+   ],
+   "polycount": 6148,
+   "bytes": 241416,
+   "source": "https://polyhaven.com/a/mid_century_lounge_chair",
+   "licence": "CC0 1.0"
+  },
+  "modern_coffee_table_01": {
+   "name": "Modern Coffee Table 01",
+   "bounds": {
+    "min": [
+     -0.3,
+     -0.0001,
+     -0.6007
+    ],
+    "max": [
+     0.3,
+     0.3899,
+     0.6012
+    ]
+   },
+   "authors": [
+    "Amin"
+   ],
+   "dims_mm": [
+    1201.8300294876099,
+    600.0000834465027,
+    389.99998569488525
+   ],
+   "polycount": 4504,
+   "bytes": 131420,
+   "source": "https://polyhaven.com/a/modern_coffee_table_01",
+   "licence": "CC0 1.0"
+  },
+  "side_table_01": {
+   "name": "Side Table 01",
+   "bounds": {
+    "min": [
+     -0.275,
+     -0.0024,
+     -0.225
+    ],
+    "max": [
+     0.275,
+     0.5483,
+     0.225
+    ]
+   },
+   "authors": [
+    "James Ray Cock"
+   ],
+   "dims_mm": [
+    550.0000715255737,
+    450.00001788139343,
+    550.6622816901654
+   ],
+   "polycount": 2756,
+   "bytes": 163760,
+   "source": "https://polyhaven.com/a/side_table_01",
+   "licence": "CC0 1.0"
+  },
+  "coffee_table_round_01": {
+   "name": "Coffee Table Round 01",
+   "bounds": {
+    "min": [
+     -0.6507,
+     -0.0014,
+     -0.6507
+    ],
+    "max": [
+     0.6507,
+     0.4896,
+     0.6507
+    ]
+   },
+   "authors": [
+    "Ulan Cabanilla"
+   ],
+   "dims_mm": [
+    1301.3009428977966,
+    1301.3015985488892,
+    491.0094439983368
+   ],
+   "polycount": 4044,
+   "bytes": 126552,
+   "source": "https://polyhaven.com/a/coffee_table_round_01",
+   "licence": "CC0 1.0"
+  },
+  "modern_wooden_cabinet": {
+   "name": "Modern Wooden Cabinet",
+   "bounds": {
+    "min": [
+     -1.22,
+     0,
+     -0.27
+    ],
+    "max": [
+     1.22,
+     0.6802,
+     0.25
+    ]
+   },
+   "authors": [
+    "Patrik Pangerl"
+   ],
+   "dims_mm": [
+    2440.0004148483276,
+    520.0000107288361,
+    680.1425069570541
+   ],
+   "polycount": 24976,
+   "bytes": 437756,
+   "source": "https://polyhaven.com/a/modern_wooden_cabinet",
+   "licence": "CC0 1.0"
+  },
+  "wooden_display_shelves_01": {
+   "name": "Wooden Display Shelves 01",
+   "bounds": {
+    "min": [
+     -0.1858,
+     0.0004,
+     -0.5389
+    ],
+    "max": [
+     0.1858,
+     1.5566,
+     0.5389
+    ]
+   },
+   "authors": [
+    "James Ray Cock"
+   ],
+   "dims_mm": [
+    1077.760934829712,
+    371.50970101356506,
+    1556.1838150024414
+   ],
+   "polycount": 3174,
+   "bytes": 125908,
+   "source": "https://polyhaven.com/a/wooden_display_shelves_01",
+   "licence": "CC0 1.0"
+  },
+  "potted_plant_01": {
+   "name": "Potted Plant 01",
+   "bounds": {
+    "min": [
+     -0.3384,
+     -0.0137,
+     -0.3637
+    ],
+    "max": [
+     0.249,
+     1.3365,
+     0.2699
+    ]
+   },
+   "authors": [
+    "Rico Cilliers"
+   ],
+   "dims_mm": [
+    588.9185070991516,
+    636.6117596626282,
+    1350.7787585258484
+   ],
+   "polycount": 96030,
+   "bytes": 1137668,
+   "source": "https://polyhaven.com/a/potted_plant_01",
+   "licence": "CC0 1.0"
+  },
+  "potted_plant_02": {
+   "name": "Potted Plant 02",
+   "bounds": {
+    "min": [
+     -0.3967,
+     0.0001,
+     -0.4203
+    ],
+    "max": [
+     0.3045,
+     0.8412,
+     0.2371
+    ]
+   },
+   "authors": [
+    "Rico Cilliers"
+   ],
+   "dims_mm": [
+    701.1570334434509,
+    657.3865860700607,
+    841.1787391305552
+   ],
+   "polycount": 69806,
+   "bytes": 857488,
+   "source": "https://polyhaven.com/a/potted_plant_02",
+   "licence": "CC0 1.0"
+  },
+  "potted_plant_04": {
+   "name": "Potted Plant 04",
+   "bounds": {
+    "min": [
+     -0.0839,
+     0.0004,
+     -0.0839
+    ],
+    "max": [
+     0.0839,
+     0.2678,
+     0.1008
+    ]
+   },
+   "authors": [
+    "James Ray Cock"
+   ],
+   "dims_mm": [
+    170.27407884597778,
+    185.9453096985817,
+    267.5964875961654
+   ],
+   "polycount": 6097,
+   "bytes": 171012,
+   "source": "https://polyhaven.com/a/potted_plant_04",
+   "licence": "CC0 1.0"
+  },
+  "ceramic_vase_01": {
+   "name": "Ceramic Vase 01",
+   "bounds": {
+    "min": [
+     -0.1018,
+     0.0012,
+     -0.1018
+    ],
+    "max": [
+     0.1018,
+     0.4015,
+     0.1018
+    ]
+   },
+   "authors": [
+    "James Ray Cock"
+   ],
+   "dims_mm": [
+    204.87193763256073,
+    206.37669414281845,
+    401.379804010503
+   ],
+   "polycount": 2548,
+   "bytes": 83380,
+   "source": "https://polyhaven.com/a/ceramic_vase_01",
+   "licence": "CC0 1.0"
+  },
+  "ceramic_vase_02": {
+   "name": "Ceramic Vase 02",
+   "bounds": {
+    "min": [
+     -0.1092,
+     0.0011,
+     -0.1092
+    ],
+    "max": [
+     0.1092,
+     0.3103,
+     0.1092
+    ]
+   },
+   "authors": [
+    "James Ray Cock"
+   ],
+   "dims_mm": [
+    219.83815729618073,
+    221.4527726173401,
+    309.2874630820006
+   ],
+   "polycount": 2756,
+   "bytes": 112604,
+   "source": "https://polyhaven.com/a/ceramic_vase_02",
+   "licence": "CC0 1.0"
+  },
+  "ceramic_vase_03": {
+   "name": "Ceramic Vase 03",
+   "bounds": {
+    "min": [
+     -0.0561,
+     0,
+     -0.0561
+    ],
+    "max": [
+     0.0561,
+     0.4144,
+     0.0561
+    ]
+   },
+   "authors": [
+    "James Ray Cock"
+   ],
+   "dims_mm": [
+    112.45502531528473,
+    112.45502158999443,
+    414.438920259272
+   ],
+   "polycount": 2784,
+   "bytes": 66212,
+   "source": "https://polyhaven.com/a/ceramic_vase_03",
+   "licence": "CC0 1.0"
+  },
+  "ceramic_vase_04": {
+   "name": "Ceramic Vase 04",
+   "bounds": {
+    "min": [
+     -0.0906,
+     0.0005,
+     -0.0906
+    ],
+    "max": [
+     0.0906,
+     0.3425,
+     0.0906
+    ]
+   },
+   "authors": [
+    "James Ray Cock"
+   ],
+   "dims_mm": [
+    183.31684917211533,
+    181.98027461767197,
+    342.3411250114441
+   ],
+   "polycount": 2224,
+   "bytes": 94368,
+   "source": "https://polyhaven.com/a/ceramic_vase_04",
+   "licence": "CC0 1.0"
+  },
+  "throw_pillows_01": {
+   "name": "Throw Pillows 01",
+   "bounds": {
+    "min": [
+     -0.4635,
+     -0.0021,
+     -0.1758
+    ],
+    "max": [
+     0.4765,
+     0.4481,
+     0.2761
+    ]
+   },
+   "authors": [
+    "Serhii Khromov"
+   ],
+   "dims_mm": [
+    1021.5678811073303,
+    627.4925470352173,
+    450.1592831220478
+   ],
+   "polycount": 6362,
+   "bytes": 164320,
+   "source": "https://polyhaven.com/a/throw_pillows_01",
+   "licence": "CC0 1.0"
+  },
+  "wicker_basket_01": {
+   "name": "Wicker Basket 01",
+   "bounds": {
+    "min": [
+     -0.1919,
+     -0.0009,
+     -0.1479
+    ],
+    "max": [
+     0.1913,
+     0.1165,
+     0.1471
+    ]
+   },
+   "authors": [
+    "Kuutti Siitonen"
+   ],
+   "dims_mm": [
+    383.2242637872696,
+    295.01520097255707,
+    117.42293369024992
+   ],
+   "polycount": 22276,
+   "bytes": 248764,
+   "source": "https://polyhaven.com/a/wicker_basket_01",
+   "licence": "CC0 1.0"
+  },
+  "wooden_bowl_01": {
+   "name": "Wooden Bowl 01",
+   "bounds": {
+    "min": [
+     -0.1568,
+     0.0005,
+     -0.1539
+    ],
+    "max": [
+     0.1562,
+     0.0942,
+     0.1552
+    ]
+   },
+   "authors": [
+    "Oliver Harries"
+   ],
+   "dims_mm": [
+    313.08163702487946,
+    309.1423809528351,
+    93.69255532510579
+   ],
+   "polycount": 14122,
+   "bytes": 143688,
+   "source": "https://polyhaven.com/a/wooden_bowl_01",
+   "licence": "CC0 1.0"
+  },
+  "standing_picture_frame_01": {
+   "name": "Standing Picture Frame 01",
+   "bounds": {
+    "min": [
+     -0.0616,
+     -0.0005,
+     -0.1004
+    ],
+    "max": [
+     0.0387,
+     0.2492,
+     0.1004
+    ]
+   },
+   "authors": [
+    "James Ray Cock"
+   ],
+   "dims_mm": [
+    200.7998451590538,
+    100.2768762409687,
+    249.65811520814896
+   ],
+   "polycount": 1634,
+   "bytes": 53556,
+   "source": "https://polyhaven.com/a/standing_picture_frame_01",
+   "licence": "CC0 1.0"
+  },
+  "hanging_picture_frame_01": {
+   "name": "Hanging Picture Frame 01",
+   "bounds": {
+    "min": [
+     -0.297,
+     -0.4205,
+     0.0001
+    ],
+    "max": [
+     0.297,
+     0.4205,
+     0.0159
+    ]
+   },
+   "authors": [
+    "James Ray Cock"
+   ],
+   "dims_mm": [
+    593.999981880188,
+    15.749315607536118,
+    840.999960899353
+   ],
+   "polycount": 2586,
+   "bytes": 51092,
+   "source": "https://polyhaven.com/a/hanging_picture_frame_01",
+   "licence": "CC0 1.0"
+  },
+  "hanging_picture_frame_02": {
+   "name": "Hanging Picture Frame 02",
+   "bounds": {
+    "min": [
+     -0.3756,
+     -0.2786,
+     0.002
+    ],
+    "max": [
+     0.3762,
+     0.2214,
+     0.0351
+    ]
+   },
+   "authors": [
+    "James Ray Cock"
+   ],
+   "dims_mm": [
+    751.8134415149689,
+    33.07514381594956,
+    499.9999701976776
+   ],
+   "polycount": 3678,
+   "bytes": 85956,
+   "source": "https://polyhaven.com/a/hanging_picture_frame_02",
+   "licence": "CC0 1.0"
+  },
+  "hanging_picture_frame_03": {
+   "name": "Hanging Picture Frame 03",
+   "bounds": {
+    "min": [
+     -0.1924,
+     -0.2549,
+     0.0004
+    ],
+    "max": [
+     0.1926,
+     0.2475,
+     0.0322
+    ]
+   },
+   "authors": [
+    "James Ray Cock"
+   ],
+   "dims_mm": [
+    385.00405848026276,
+    31.757352175191045,
+    502.39527225494385
+   ],
+   "polycount": 24348,
+   "bytes": 247880,
+   "source": "https://polyhaven.com/a/hanging_picture_frame_03",
+   "licence": "CC0 1.0"
+  },
+  "dining_chair_02": {
+   "name": "Dining Chair 02",
+   "bounds": {
+    "min": [
+     -0.2168,
+     0.0013,
+     -0.331
+    ],
+    "max": [
+     0.2168,
+     0.9747,
+     0.2454
+    ]
+   },
+   "authors": [
+    "James Ray Cock"
+   ],
+   "dims_mm": [
+    433.5707724094391,
+    576.4201134443283,
+    973.3776897192001
+   ],
+   "polycount": 22013,
+   "bytes": 260564,
+   "source": "https://polyhaven.com/a/dining_chair_02",
+   "licence": "CC0 1.0"
+  },
+  "round_wooden_table_01": {
+   "name": "Round Wooden Table 01",
+   "bounds": {
+    "min": [
+     -0.6997,
+     -0.0013,
+     -0.6997
+    ],
+    "max": [
+     0.6997,
+     1.0037,
+     0.6997
+    ]
+   },
+   "authors": [
+    "Ulan Cabanilla"
+   ],
+   "dims_mm": [
+    1399.3489742279053,
+    1399.3489146232605,
+    1005.0213932991028
+   ],
+   "polycount": 8640,
+   "bytes": 156272,
+   "source": "https://polyhaven.com/a/round_wooden_table_01",
+   "licence": "CC0 1.0"
+  },
+  "sofa_02": {
+   "name": "Sofa 02",
+   "bounds": {
+    "min": [
+     -0.9033,
+     0.0002,
+     -0.4777
+    ],
+    "max": [
+     0.9039,
+     0.7097,
+     0.3401
+    ]
+   },
+   "authors": [
+    "Kirill Sannikov"
+   ],
+   "dims_mm": [
+    1807.1673512458801,
+    817.7513778209686,
+    709.4888985157013
+   ],
+   "polycount": 2728,
+   "bytes": 140552,
+   "source": "https://polyhaven.com/a/sofa_02",
+   "licence": "CC0 1.0"
+  },
+  "modern_ceiling_lamp_01": {
+   "name": "Modern Ceiling Lamp 01",
+   "bounds": {
+    "min": [
+     -0.2158,
+     0.2211,
+     -0.2143
+    ],
+    "max": [
+     0.2159,
+     1.1726,
+     0.2173
+    ]
+   },
+   "authors": [
+    "James Ray Cock"
+   ],
+   "dims_mm": [
+    431.6493272781372,
+    431.6607564687729,
+    951.5514969825745
+   ],
+   "polycount": 5602,
+   "bytes": 129984,
+   "source": "https://polyhaven.com/a/modern_ceiling_lamp_01",
+   "licence": "CC0 1.0"
+  },
+  "Ottoman_01": {
+   "name": "Ottoman 01",
+   "bounds": {
+    "min": [
+     -0.4402,
+     0,
+     -0.3097
+    ],
+    "max": [
+     0.4444,
+     0.6243,
+     0.3115
+    ]
+   },
+   "authors": [
+    "Caspian Fortune"
+   ],
+   "dims_mm": [
+    884.5577836036682,
+    621.1484670639038,
+    624.3239195573551
+   ],
+   "polycount": 4240,
+   "bytes": 276032,
+   "source": "https://polyhaven.com/a/Ottoman_01",
+   "licence": "CC0 1.0"
+  },
+  "painted_wooden_nightstand": {
+   "name": "Painted Wooden Nightstand",
+   "bounds": {
+    "min": [
+     -0.2534,
+     0,
+     -0.2492
+    ],
+    "max": [
+     0.2512,
+     0.6155,
+     0.2595
+    ]
+   },
+   "authors": [
+    "Kirill Sannikov"
+   ],
+   "dims_mm": [
+    504.5645833015442,
+    508.71600210666656,
+    615.5209708555738
+   ],
+   "polycount": 470,
+   "bytes": 204888,
+   "source": "https://polyhaven.com/a/painted_wooden_nightstand",
+   "licence": "CC0 1.0"
+  },
+  "metal_stool_01": {
+   "name": "Metal Stool 01",
+   "bounds": {
+    "min": [
+     -0.176,
+     0,
+     -0.1773
+    ],
+    "max": [
+     0.176,
+     0.8828,
+     0.1772
+    ]
+   },
+   "authors": [
+    "Ulan Cabanilla"
+   ],
+   "dims_mm": [
+    351.9909083843231,
+    354.570209980011,
+    882.7742969733663
+   ],
+   "polycount": 8334,
+   "bytes": 275792,
+   "source": "https://polyhaven.com/a/metal_stool_01",
+   "licence": "CC0 1.0"
+  },
+  "wall_clock": {
+   "name": "Wall Clock",
+   "bounds": {
+    "min": [
+     -0.1602,
+     -0.1602,
+     0
+    ],
+    "max": [
+     0.1602,
+     0.1602,
+     0.0472
+    ]
+   },
+   "authors": [
+    "PierreB3D"
+   ],
+   "dims_mm": [
+    320.4909861087799,
+    47.2230945505423,
+    320.4909861087799
+   ],
+   "polycount": 3658,
+   "bytes": 78832,
+   "source": "https://polyhaven.com/a/wall_clock",
+   "licence": "CC0 1.0"
+  },
+  "wooden_candlestick": {
+   "name": "Wooden Candlestick",
+   "bounds": {
+    "min": [
+     -0.0487,
+     0,
+     -0.0494
+    ],
+    "max": [
+     0.0485,
+     0.2197,
+     0.0493
+    ]
+   },
+   "authors": [
+    "Josh Dean"
+   ],
+   "dims_mm": [
+    98.3029305934906,
+    99.87897053360939,
+    219.74407136440277
+   ],
+   "polycount": 3328,
+   "bytes": 128408,
+   "source": "https://polyhaven.com/a/wooden_candlestick",
+   "licence": "CC0 1.0"
+  },
+  "painted_wooden_chair_01": {
+   "name": "Painted Wooden Chair 01",
+   "bounds": {
+    "min": [
+     -0.2174,
+     -0.0007,
+     -0.3006
+    ],
+    "max": [
+     0.2144,
+     0.9557,
+     0.2392
+    ]
+   },
+   "authors": [
+    "Kuutti Siitonen"
+   ],
+   "dims_mm": [
+    431.75144493579865,
+    539.8241728544235,
+    956.4821355743334
+   ],
+   "polycount": 724,
+   "bytes": 166876,
+   "source": "https://polyhaven.com/a/painted_wooden_chair_01",
+   "licence": "CC0 1.0"
+  },
+  "stationery_supplies": {
+   "name": "Stationery Supplies",
+   "bounds": {
+    "min": [
+     -0.1633,
+     -0.0737,
+     -0.0418
+    ],
+    "max": [
+     0.1386,
+     0.0907,
+     0.0418
+    ]
+   },
+   "authors": [
+    "Mateusz Sadek"
+   ],
+   "dims_mm": [
+    301.8620014190674,
+    83.66207033395767,
+    164.34769332408905
+   ],
+   "polycount": 4412,
+   "bytes": 87612,
+   "source": "https://polyhaven.com/a/stationery_supplies",
+   "licence": "CC0 1.0"
+  },
+  "office_notepads": {
+   "name": "Office Notepads",
+   "bounds": {
+    "min": [
+     -0.555,
+     0,
+     -0.3312
+    ],
+    "max": [
+     0.5478,
+     0.022,
+     0.3287
+    ]
+   },
+   "authors": [
+    "Ulan Cabanilla"
+   ],
+   "dims_mm": [
+    1102.7901768684387,
+    659.8375737667084,
+    21.99999988079071
+   ],
+   "polycount": 666,
+   "bytes": 22596,
+   "source": "https://polyhaven.com/a/office_notepads",
+   "licence": "CC0 1.0"
+  }
+ },
+ "textures": {
+  "oak_veneer_01": {
+   "name": "Oak Veneer 01",
+   "authors": [
+    "Jenelle van Heerden"
+   ],
+   "size_m": [
+    1.8300000429153442,
+    1.8300000429153442
+   ],
+   "albedoMean": 0.519,
+   "roughMean": 0.53,
+   "bytes": 170834,
+   "source": "https://polyhaven.com/a/oak_veneer_01",
+   "licence": "CC0 1.0"
+  },
+  "white_oak_veneer": {
+   "name": "White Oak Veneer",
+   "authors": [
+    "Jenelle van Heerden"
+   ],
+   "size_m": [
+    0.5,
+    0.5
+   ],
+   "albedoMean": 0.49,
+   "roughMean": 0.733,
+   "bytes": 146266,
+   "source": "https://polyhaven.com/a/white_oak_veneer",
+   "licence": "CC0 1.0"
+  },
+  "american_walnut_veneer": {
+   "name": "American Walnut Veneer",
+   "authors": [
+    "Jenelle van Heerden"
+   ],
+   "size_m": [
+    1,
+    1
+   ],
+   "albedoMean": 0.435,
+   "roughMean": 0.556,
+   "bytes": 140542,
+   "source": "https://polyhaven.com/a/american_walnut_veneer",
+   "licence": "CC0 1.0"
+  },
+  "beige_wall_001": {
+   "name": "Beige Wall 001",
+   "authors": [
+    "Dimitrios Savva",
+    "Rico Cilliers"
+   ],
+   "size_m": [
+    3,
+    3.000000238418579
+   ],
+   "albedoMean": 0.561,
+   "roughMean": 0.621,
+   "bytes": 113132,
+   "source": "https://polyhaven.com/a/beige_wall_001",
+   "licence": "CC0 1.0"
+  },
+  "concrete_floor_02": {
+   "name": "Concrete Floor 02",
+   "authors": [
+    "Rob Tuytel"
+   ],
+   "size_m": [
+    2,
+    2
+   ],
+   "albedoMean": 0.435,
+   "roughMean": 0.517,
+   "bytes": 581122,
+   "source": "https://polyhaven.com/a/concrete_floor_02",
+   "licence": "CC0 1.0"
+  },
+  "rough_linen": {
+   "name": "Rough Linen",
+   "authors": [
+    "colormass",
+    "Rico Cilliers"
+   ],
+   "size_m": [
+    0.2707081392676629,
+    0.27129998803138733
+   ],
+   "albedoMean": 0.662,
+   "roughMean": 0.718,
+   "bytes": 499114,
+   "source": "https://polyhaven.com/a/rough_linen",
+   "licence": "CC0 1.0"
+  },
+  "velour_velvet": {
+   "name": "Velour Velvet",
+   "authors": [
+    "colormass",
+    "Rico Cilliers"
+   ],
+   "size_m": [
+    0.28422817052147237,
+    0.273499995470047
+   ],
+   "albedoMean": 0.371,
+   "roughMean": 0.725,
+   "bytes": 275070,
+   "source": "https://polyhaven.com/a/velour_velvet",
+   "licence": "CC0 1.0"
+  },
+  "curly_teddy_natural": {
+   "name": "Curly Teddy Natural",
+   "authors": [
+    "colormass",
+    "Rico Cilliers"
+   ],
+   "size_m": [
+    0.335804452696631,
+    0.33090004324913025
+   ],
+   "albedoMean": 0.839,
+   "roughMean": 0.701,
+   "bytes": 207352,
+   "source": "https://polyhaven.com/a/curly_teddy_natural",
+   "licence": "CC0 1.0"
+  },
+  "poly_wool_herringbone": {
+   "name": "Poly Wool Herringbone",
+   "authors": [
+    "colormass",
+    "Rico Cilliers"
+   ],
+   "size_m": [
+    0.2700788548673393,
+    0.27570000290870667
+   ],
+   "albedoMean": 0.462,
+   "roughMean": 0.86,
+   "bytes": 613734,
+   "source": "https://polyhaven.com/a/poly_wool_herringbone",
+   "licence": "CC0 1.0"
+  },
+  "leather_white": {
+   "name": "Leather White",
+   "authors": [
+    "Rob Tuytel"
+   ],
+   "size_m": [
+    0.30000001192092896,
+    0.30000001192092896
+   ],
+   "albedoMean": 0.572,
+   "roughMean": 0.618,
+   "bytes": 236634,
+   "source": "https://polyhaven.com/a/leather_white",
+   "licence": "CC0 1.0"
+  },
+  "cotton_jersey": {
+   "name": "Cotton Jersey",
+   "authors": [
+    "colormass",
+    "Rico Cilliers"
+   ],
+   "size_m": [
+    0.2636027473872483,
+    0.2637999951839447
+   ],
+   "albedoMean": 0.686,
+   "roughMean": 0.801,
+   "bytes": 131360,
+   "source": "https://polyhaven.com/a/cotton_jersey",
+   "licence": "CC0 1.0"
+  }
+ },
+ "views": {
+  "garden": {
+   "day": {
+    "file": "garden-day.webp",
+    "id": "symmetrical_garden_02",
+    "size": 259300,
+    "width": 3072,
+    "height": 768
+   },
+   "sunset": {
+    "file": "garden-sunset.webp",
+    "id": "symmetrical_garden_02",
+    "size": 256630,
+    "width": 3072,
+    "height": 768
+   },
+   "night": {
+    "file": "garden-night.webp",
+    "id": "ladybrand_heritage_house",
+    "size": 161782,
+    "width": 3072,
+    "height": 768
+   }
+  },
+  "ocean": {
+   "day": {
+    "file": "ocean-day.webp",
+    "id": "illovo_beach_balcony",
+    "size": 90640,
+    "width": 3072,
+    "height": 768
+   },
+   "sunset": {
+    "file": "ocean-sunset.webp",
+    "id": "the_sky_is_on_fire",
+    "size": 77758,
+    "width": 3072,
+    "height": 768
+   },
+   "night": {
+    "file": "ocean-night.webp",
+    "id": "blue_lagoon_night",
+    "size": 63908,
+    "width": 3072,
+    "height": 768
+   }
+  },
+  "city": {
+   "day": {
+    "file": "city-day.webp",
+    "id": "homecoming_center_rooftop",
+    "size": 120048,
+    "width": 3072,
+    "height": 768
+   },
+   "sunset": {
+    "file": "city-sunset.webp",
+    "id": "sunset_jhbcentral",
+    "size": 109792,
+    "width": 3072,
+    "height": 768
+   },
+   "night": {
+    "file": "city-night.webp",
+    "id": "shanghai_bund",
+    "size": 122322,
+    "width": 3072,
+    "height": 768
+   }
+  }
+ },
+ "viewBand": {
+  "top": 50,
+  "bottom": -40
+ },
+ "viewCredits": {
+  "symmetrical_garden_02": {
+   "name": "Symmetrical Garden 02",
+   "authors": [
+    "Dimitrios Savva",
+    "Jarod Guest"
+   ],
+   "source": "https://polyhaven.com/a/symmetrical_garden_02"
+  },
+  "ladybrand_heritage_house": {
+   "name": "Ladybrand Heritage House",
+   "authors": [
+    "Dario Barresi"
+   ],
+   "source": "https://polyhaven.com/a/ladybrand_heritage_house"
+  },
+  "illovo_beach_balcony": {
+   "name": "Illovo Beach Balcony",
+   "authors": [
+    "Greg Zaal"
+   ],
+   "source": "https://polyhaven.com/a/illovo_beach_balcony"
+  },
+  "the_sky_is_on_fire": {
+   "name": "The Sky Is On Fire",
+   "authors": [
+    "Greg Zaal",
+    "Rico Cilliers"
+   ],
+   "source": "https://polyhaven.com/a/the_sky_is_on_fire"
+  },
+  "blue_lagoon_night": {
+   "name": "Blue Lagoon Night",
+   "authors": [
+    "Greg Zaal"
+   ],
+   "source": "https://polyhaven.com/a/blue_lagoon_night"
+  },
+  "homecoming_center_rooftop": {
+   "name": "Homecoming Center Rooftop",
+   "authors": [
+    "Dario Barresi"
+   ],
+   "source": "https://polyhaven.com/a/homecoming_center_rooftop"
+  },
+  "sunset_jhbcentral": {
+   "name": "Joburg Central Sunset",
+   "authors": [
+    "Greg Zaal",
+    "Dimitrios Savva"
+   ],
+   "source": "https://polyhaven.com/a/sunset_jhbcentral"
+  },
+  "shanghai_bund": {
+   "name": "Shanghai Bund",
+   "authors": [
+    "Greg Zaal"
+   ],
+   "source": "https://polyhaven.com/a/shanghai_bund"
+  }
+ }
+}
