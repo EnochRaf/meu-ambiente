@@ -8,7 +8,8 @@
 // local work. Everything comes from the environment:
 //   MAKE3D_PROVIDER  fal (default when FAL_KEY is set) | mock (serves tmp/mock-model.glb; local work only)
 //   FAL_KEY          the fal.ai key (https://fal.ai/dashboard/keys)
-//   MAKE3D_MODEL     the fal endpoint; default fal-ai/hunyuan3d/v2 (textured, about $0.5 a piece)
+//   MAKE3D_MODEL     the fal endpoint; default fal-ai/hunyuan3d-v3/image-to-3d (PBR, 120k faces,
+//                    about $0.68 a piece); fal-ai/hunyuan3d/v2 (textured, about $0.5) also works
 //   MAKE3D_DAILY_CAP how many generations one server instance accepts per day (default 40)
 //   MAKE3D_IP_CAP    how many one address may start per day (default 6)
 // The caps live in the instance's memory: enough to stop a loop or a prank on a
@@ -31,10 +32,17 @@ function allow(ip) {
 // ---- providers -------------------------------------------------------------------------
 // each: submit(dataUrl) -> id, status(id) -> { state: 'queued'|'running'|'done'|'failed', url?, detail? }
 const fal = {
-  model: () => process.env.MAKE3D_MODEL || 'fal-ai/hunyuan3d/v2',
+  model: () => process.env.MAKE3D_MODEL || 'fal-ai/hunyuan3d-v3/image-to-3d',
+  // what each endpoint wants besides the picture
+  input(dataUrl) {
+    const m = this.model();
+    if (/hunyuan3d-v3/.test(m)) return { input_image_url: dataUrl, enable_pbr: true, face_count: 120000, generate_type: 'Normal' };
+    if (/hunyuan3d\/v2/.test(m)) return { input_image_url: dataUrl, textured_mesh: true };
+    return { input_image_url: dataUrl, image_url: dataUrl };
+  },
   headers: () => ({ Authorization: `Key ${process.env.FAL_KEY}`, 'Content-Type': 'application/json' }),
   async submit(dataUrl) {
-    const r = await fetch(`https://queue.fal.run/${this.model()}`, { method: 'POST', headers: this.headers(), body: JSON.stringify({ input_image_url: dataUrl, textured_mesh: true }) });
+    const r = await fetch(`https://queue.fal.run/${this.model()}`, { method: 'POST', headers: this.headers(), body: JSON.stringify(this.input(dataUrl)) });
     if (!r.ok) throw new Error(`provider ${r.status}: ${(await r.text()).slice(0, 200)}`);
     const j = await r.json();
     return j.request_id;
@@ -49,7 +57,7 @@ const fal = {
     if (j.status !== 'COMPLETED') return { state: 'failed', detail: j.status || `status ${s.status}` };
     const r = await fetch(base, { headers: this.headers() });
     const out = await r.json().catch(() => ({}));
-    const url = out.model_mesh?.url || out.model_glb?.url || out.model?.url || out.mesh?.url;
+    const url = out.model_glb?.url || out.model_urls?.glb?.url || out.model_mesh?.url || out.model?.url || out.mesh?.url;
     return url ? { state: 'done', url } : { state: 'failed', detail: 'no model in the result' };
   },
   async fetchModel(url) { return fetch(url); },

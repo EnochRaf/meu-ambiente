@@ -160,7 +160,7 @@ How the app works and where things are. The short version is in the README.
 - The full 3D model (optional, "Make the full 3D model" on the size step): the
   cutout PNG goes to `/api/make3d` (`api/make3d.js`, a Vercel function that
   `scripts/serve.mjs` also runs), which submits it to a provider through the
-  fal.ai queue (default `fal-ai/hunyuan3d/v2`, textured, about $0.5 a piece),
+  fal.ai queue (default `fal-ai/hunyuan3d-v3/image-to-3d` with PBR and 120k faces, about $0.68 a piece),
   reports the state while the browser polls, and streams the GLB back. The key
   stays on the server; per-instance daily and per-address caps are in
   memory (`MAKE3D_DAILY_CAP`, `MAKE3D_IP_CAP`). The GLB is stored with the

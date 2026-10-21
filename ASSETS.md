@@ -14,7 +14,7 @@ needed. The same list, with links, is in the app under Settings › About and cr
 | U²-Net-p (AI cutout without WebGPU, served with the app) | Xuebin Qin et al. | Apache 2.0 |
 | CLIP ViT-B/32 (suggests what a photo shows, from Hugging Face) | OpenAI | MIT |
 | Depth Anything V2 small (gives photo items their depth, from Hugging Face) | Lihe Yang et al. | Apache 2.0 |
-| Hunyuan3D 2 through fal.ai (optional full 3D models; paid, server side) | Tencent / fal.ai | fal.ai terms; outputs are the user's |
+| Hunyuan3D 3 through fal.ai (optional full 3D models; paid, server side) | Tencent / fal.ai | fal.ai terms; outputs are the user's |
 | Plus Jakarta Sans, Fraunces (Google Fonts) | Tokotype, Undercase Type | SIL OFL 1.1 |
 
 ## AI models
