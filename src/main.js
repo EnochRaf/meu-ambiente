@@ -7,6 +7,7 @@ import { setupUI, toast } from './ui.js';
 import { t } from './i18n/index.js';
 import { roomName } from './i18n/names.js';
 import { customStore, makeCustomDef } from './customItems.js';
+import { shrinkModelBlob, SHRINK_ABOVE } from './glbTextures.js';
 
 async function boot() {
   let project = loadLocal() || defaultProject();
@@ -20,7 +21,14 @@ async function boot() {
   }
   const customDefs = [];
   try {
-    for (const rec of await customStore.all()) { const def = await makeCustomDef(rec, DEFS); customDefs.push(def); DEFS[def.id] = def; }
+    for (const rec of await customStore.all()) {
+      // full models saved before textures were shrunk (about 20 MB each): shrink once and store the smaller one
+      if (rec.model && rec.model.size > SHRINK_ABOVE) {
+        try { const small = await shrinkModelBlob(rec.model); if (small.size < rec.model.size) { rec.model = small; await customStore.put(rec); } }
+        catch (err) { console.warn('Could not shrink a saved model', err?.message); }
+      }
+      const def = await makeCustomDef(rec, DEFS); customDefs.push(def); DEFS[def.id] = def;
+    }
   } catch (err) { console.warn('Could not load custom items', err); }
 
   await preloadTextures();

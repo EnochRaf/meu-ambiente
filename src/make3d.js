@@ -3,6 +3,8 @@
 // This is the one path in the app that leaves the browser, so the dialog says
 // so before anything is sent. `onStatus` gets 'sending' | 'queued' | 'running'
 // | 'downloading' as things move.
+import { shrinkModelBlob } from './glbTextures.js';
+
 // the route beside the site (a server function, not a file: built without new URL so the build's file scan skips it)
 const API = import.meta.url.replace(/\/src\/[^/]*$/, '') .replace(/^[a-z]+:\/\/[^/]+/, '') + '/api/make3d';
 
@@ -78,5 +80,7 @@ export async function makeModel(cutout, onStatus = () => {}, { signal } = {}) {
   onStatus('downloading');
   const blob = await download(id, url, signal);
   if (blob.size < 1000) throw new ModelError('failed', 'empty model');
-  return new Blob([blob], { type: 'model/gltf-binary' });
+  const glb = new Blob([blob], { type: 'model/gltf-binary' });
+  try { return await shrinkModelBlob(glb); } // 4096 px textures down to 1024 (see glbTextures.js)
+  catch (err) { console.warn('could not shrink the model, keeping it as it came:', err?.message); return glb; }
 }
