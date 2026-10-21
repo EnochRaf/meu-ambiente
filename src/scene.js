@@ -291,7 +291,7 @@ export function createScene(container) {
       if (!def) continue;
       seen.add(item.id);
       const finish = itemFinish(item, def);
-      const sig = `${item.type}|${finish.mat}|${finish.color}|${finish.frame || ''}|${Q.texture}`;
+      const sig = `${item.type}|${finish.mat}|${finish.color}|${finish.frame || ''}|${Q.texture}|${def.size.join()}`;
       let rec = itemMeshes.get(item.id);
       if (!rec || rec.sig !== sig) {
         if (rec) { itemsGroup.remove(rec.group); unregisterLamps(rec.group); disposeTree(rec.group); }

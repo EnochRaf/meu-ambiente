@@ -269,6 +269,9 @@ body.ui-hidden .show-ui { opacity: 1; transform: none; pointer-events: auto; }
 .confirm-bar { position: sticky; bottom: 0; display: flex; align-items: center; gap: 8px; margin-top: 14px; padding: 10px 12px; border-radius: 16px; background: var(--card); box-shadow: 0 10px 24px -14px rgba(0, 0, 0, .5); }
 .confirm-bar span { flex: 1; font-size: 13px; font-weight: 600; }
 .modal.save-tpl { width: min(460px, 92vw); }
+.modal.size { width: min(520px, 92vw); }
+.modal.size .row3 { margin: 12px 0 8px; }
+.modal.size .check { margin-bottom: 14px; }
 .modal.save-tpl img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 14px; margin: 4px 0 10px; background: var(--pic); }
 .modal.save-tpl .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; font-size: 12px; font-weight: 700; color: var(--mute); }
 .modal.save-tpl input { font: inherit; font-size: 14px; color: var(--ink); border: 0; border-radius: 12px; padding: 10px 12px; background: rgb(var(--tint) / .06); }

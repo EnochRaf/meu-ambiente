@@ -16,6 +16,7 @@ import { createThumbnailer } from './thumbs.js';
 import { themeMode, resolvedTheme, setThemeMode, onTheme } from './ui/theme.js';
 import { t, lang, setLang, onLang, translatePage, LANGUAGES } from './i18n/index.js';
 import { pieceName, surfaceName, openingName } from './i18n/names.js';
+import { setupSizeDialog } from './sizeDialog.js';
 
 export { toast };
 const DRAWER_KEY = 'roomsmith:drawer'; // internal storage key, kept from before the rename
@@ -37,6 +38,7 @@ export function setupUI({ store, scene, interaction, onShare, onSaveImage, custo
     isOpen: (id) => isOpen && current === id,
   };
   const drawers = { rooms: roomsDrawer(ctx), furniture: furnitureDrawer(ctx), materials: materialsDrawer(ctx), atmosphere: atmosphereDrawer(ctx), settings: settingsDrawer(ctx) };
+  const sizeDialog = setupSizeDialog(ctx);
   // what each drawer depends on: it is rebuilt only when this changes
   const sigs = {
     rooms: (p) => { const r = activeRoom(p); return [p.rooms.map((x) => [x.id, x.name]), p.activeRoomId, r.width, r.length, r.height, r.type, r.style, r.openings, r.balcony, r.name]; },
@@ -143,6 +145,7 @@ export function setupUI({ store, scene, interaction, onShare, onSaveImage, custo
   $('#pb-dup').onclick = () => interaction.duplicateSelected();
   $('#pb-color').onclick = () => (isOpen && current === 'materials' ? closeDrawer() : openDrawer('materials'));
   $('#pb-edit').onclick = () => { drawers.rooms.openAdvanced(); openDrawer('rooms'); setTimeout(() => $('#room-advanced')?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 80); };
+  $('#pb-size').onclick = () => { const info = selectionInfo(); if (info?.size) sizeDialog.open(info.def); };
   $('#pb-delete').onclick = () => interaction.deleteSelected();
   function selectionInfo() {
     const sel = interaction.selection, room = activeRoom(store.get());
@@ -150,7 +153,7 @@ export function setupUI({ store, scene, interaction, onShare, onSaveImage, custo
     if (sel.kind === 'surface') return { name: surfaceName(sel.key), color: true };
     if (sel.kind === 'opening') { const o = room.openings.find((x) => x.id === sel.id); return o ? { name: openingName(o.type), edit: true, del: true } : null; }
     const item = room.items.find((i) => i.id === sel.id), def = item && DEFS[item.type];
-    return def ? { name: pieceName(def), def, rotate: def.kind !== 'wall', dup: true, color: true, del: true } : null;
+    return def ? { name: pieceName(def), def, item, rotate: def.kind !== 'wall', dup: true, color: true, size: !!def.custom, del: true } : null;
   }
   // on a phone the open drawer covers the room, so the toolbar waits until it closes
   const covered = () => hidden || (isOpen && innerWidth <= 760);
@@ -159,7 +162,7 @@ export function setupUI({ store, scene, interaction, onShare, onSaveImage, custo
     bar.classList.toggle('on', !!info && !covered());
     if (info) {
       $('#pb-name').textContent = info.name;
-      $('#pb-rot').hidden = !info.rotate; $('#pb-dup').hidden = !info.dup; $('#pb-color').hidden = !info.color; $('#pb-edit').hidden = !info.edit; $('#pb-delete').hidden = !info.del;
+      $('#pb-rot').hidden = !info.rotate; $('#pb-dup').hidden = !info.dup; $('#pb-color').hidden = !info.color; $('#pb-edit').hidden = !info.edit; $('#pb-size').hidden = !info.size; $('#pb-delete').hidden = !info.del;
       follow();
     }
     if (isOpen && current === 'materials') renderDrawer();

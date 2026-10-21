@@ -6,7 +6,7 @@ import { pieceName, pieceTip } from '../i18n/names.js';
 import { activeRoom } from '../state.js';
 import { CATALOG, DEFS } from '../catalog.js';
 import { roomTypeOf } from '../roomTypes.js';
-import { customStore } from '../customItems.js';
+import { customStore, forgetModel } from '../customItems.js';
 
 const TABS = ['suggested', 'seating', 'tables', 'beds', 'storage', 'lights', 'decor', 'kitchen', 'bath', 'balcony', 'mine'];
 
@@ -33,7 +33,7 @@ export function furnitureDrawer(ctx) {
     if (mine) c.append(el('button', { class: 'x', title: t('furniture.removeMine'), onclick: async (e) => {
       e.stopPropagation();
       if (!confirm(t('furniture.confirmRemoveMine', { name: def.name }))) return;
-      await customStore.remove(def.id);
+      await customStore.remove(def.id); forgetModel(def.id);
       customDefs.splice(customDefs.indexOf(def), 1); delete DEFS[def.id]; thumbs.forget(def.id);
       store.update((p) => { for (const r of p.rooms) r.items = r.items.filter((i) => i.type !== def.id); });
     } }, icon('close')));

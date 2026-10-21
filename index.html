@@ -76,6 +76,7 @@
   <symbol id="i-collapse" viewBox="0 0 24 24"><path d="m11 17-5-5 5-5M18 17l-5-5 5-5"/></symbol>
   <symbol id="i-full" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></symbol>
   <symbol id="i-panels" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M9.5 4.5v15"/></symbol>
+  <symbol id="i-size" viewBox="0 0 24 24"><path d="M4 20V4h16v16z"/><path d="M8 16h8M8 16l-2-2m2 2 2 2M16 8v8m0-8-2 2m2-2 2 2"/></symbol>
   <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></symbol>
   <symbol id="i-save" viewBox="0 0 24 24"><path d="M6 4h9l3 3v11.5A1.5 1.5 0 0 1 16.5 20h-9A1.5 1.5 0 0 1 6 18.5z"/><path d="M9 4v5h6"/></symbol>
 </svg>
@@ -118,6 +119,7 @@
   <button id="pb-dup" data-i18n-attr="title:toolbar.copy.tip"><svg><use href="#i-copy"/></svg><span data-i18n="toolbar.copy">Copy</span></button>
   <button id="pb-color" data-i18n-attr="title:toolbar.material.tip"><svg><use href="#i-material"/></svg><span data-i18n="toolbar.material">Material</span></button>
   <button id="pb-edit" data-i18n-attr="title:toolbar.edit.tip"><svg><use href="#i-edit"/></svg><span data-i18n="toolbar.edit">Edit</span></button>
+  <button id="pb-size" data-i18n-attr="title:toolbar.size.tip"><svg><use href="#i-size"/></svg><span data-i18n="toolbar.size">Size</span></button>
   <button id="pb-delete" class="danger" data-i18n-attr="title:toolbar.remove.tip"><svg><use href="#i-trash"/></svg><span data-i18n="action.remove">Remove</span></button>
 </div>
 <div id="measure" class="measure"></div>
@@ -152,6 +154,14 @@
   <label class="field"><span data-i18n="saveTpl.name">Name</span><input id="save-tpl-name" maxlength="40" autocomplete="off"></label>
   <label class="field"><span><span data-i18n="saveTpl.description">Description</span> <em class="muted" data-i18n="saveTpl.optional">optional</em></span><input id="save-tpl-blurb" maxlength="120" autocomplete="off"></label>
   <div class="row right"><button id="save-tpl-cancel" class="btn" data-i18n="action.cancel">Cancel</button><button id="save-tpl-ok" class="btn primary" data-i18n="saveTpl.save">Save template</button></div>
+</dialog>
+
+<dialog id="size-modal" class="glass modal size" aria-labelledby="size-title">
+  <h3 id="size-title" data-i18n="size.title">Size</h3>
+  <p class="muted" id="size-sub"></p>
+  <div class="row3"><label class="field"><span data-i18n="dim.widthCm">Width (cm)</span><input id="sz-w" type="number" min="2" max="1000"></label><label class="field"><span id="sz-d-label" data-i18n="dim.depthCm">Depth (cm)</span><input id="sz-d" type="number" min="1" max="1000"></label><label class="field"><span data-i18n="dim.heightCm">Height (cm)</span><input id="sz-h" type="number" min="2" max="600"></label></div>
+  <label class="check"><input id="sz-lock" type="checkbox" checked> <span data-i18n="size.keepProportions">Keep the proportions</span></label>
+  <div class="row right"><button id="sz-cancel" class="btn" data-i18n="action.cancel">Cancel</button><button id="sz-ok" class="btn primary" data-i18n="size.apply">Apply</button></div>
 </dialog>
 
 <dialog id="photo-modal" class="glass modal photo">

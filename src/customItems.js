@@ -129,10 +129,10 @@ function decodeDepth(px, n) {
 // A GLB made from the photo (see make3d.js): parsed once per blob, stood on the
 // floor and centred, with our lamp field on its materials. `proportions` is the
 // model's own width : depth : height so the size step can keep them.
-const parsed = new WeakMap(); // blob -> Promise<{ scene, size }>
+const parsed = new Map(); // key (item id, or the blob itself) -> Promise<{ scene, size }>
 let gltfLoader = null;
-export function loadModelBlob(blob) {
-  if (parsed.has(blob)) return parsed.get(blob);
+export function loadModelBlob(blob, key = blob) {
+  if (parsed.has(key)) return parsed.get(key);
   const pr = (async () => {
     gltfLoader ??= new GLTFLoader();
     const buf = await blob.arrayBuffer();
@@ -150,9 +150,10 @@ export function loadModelBlob(blob) {
     const holder = new THREE.Group(); holder.add(root);
     return { scene: holder, size: [size.x, size.z, size.y] }; // width, depth, height in the model's units
   })();
-  parsed.set(blob, pr);
+  parsed.set(key, pr);
   return pr;
 }
+export const forgetModel = (key) => parsed.delete(key);
 export const modelProportions = async (blob) => (await loadModelBlob(blob)).size;
 
 // ---- catalog definitions -------------------------------------------------------------
@@ -217,7 +218,7 @@ export async function makeCustomDef(rec, defs = null) {
     };
   }
   if (rec.model) {
-    const { scene, size } = await loadModelBlob(rec.model);
+    const { scene, size } = await loadModelBlob(rec.model, rec.id); // parsed once per item, however often it is rebuilt
     const wall = rec.kind === 'wall';
     const [W, D, H] = wall ? [rec.size[0], rec.size[2], rec.size[1]] : rec.size;
     // one uniform scale: the width is what the person set, depth and height follow the model
