@@ -342,6 +342,7 @@ body.busy .drawer, body.busy .tour { opacity: .55; }
 .make-row { display: flex; flex-direction: column; gap: 8px; margin-top: 12px !important; padding-top: 12px; border-top: 1px solid var(--line); }
 .make-row .btn { align-self: flex-start; }
 .make-row .btn svg { width: 16px; height: 16px; }
+#ph-model-note.bad { color: var(--danger); }
 #ph-dims.dim { opacity: .45; pointer-events: none; }
 
 /* narrow windows (a phone, a side pane): the dialog's columns stack; on the

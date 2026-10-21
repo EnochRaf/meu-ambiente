@@ -234,7 +234,8 @@ export function setupPhotoDialog({ thumbs, toast, onAdded }) {
   $('#ph-make-model').onclick = async () => {
     if (!S.result || S.modelBusy) return;
     const btn = $('#ph-make-model'), note = $('#ph-model-note');
-    S.modelBusy = true; btn.disabled = true; note.hidden = false; $('#ph-match-note').hidden = $('#ph-depth-note').hidden = true;
+    S.modelBusy = true; btn.disabled = true; note.hidden = false; note.classList.remove('bad'); $('#ph-match-note').hidden = $('#ph-depth-note').hidden = true;
+    $('#ph-save').disabled = true; // nothing gets added while the model is on its way
     const sig = depthSig();
     try {
       const blob = await makeModel(await canvasToBlob(S.result.canvas), (state, position) => { note.textContent = t(`photo.model.${state}`, { n: position ?? '' }); });
@@ -244,10 +245,11 @@ export function setupPhotoDialog({ thumbs, toast, onAdded }) {
       syncVariant(); if (S.lockRatio) syncRatio('w'); renderScale(); renderPreviews();
     } catch (err) {
       console.warn('full model failed:', err?.code, err?.message);
-      note.textContent = t(err?.code === 'limit' ? 'photo.modelLimit' : 'photo.modelFailed');
-      syncVariant();
+      note.textContent = t(err?.code === 'limit' ? 'photo.modelLimit' : 'photo.modelFailed') + (err?.message && err.message !== err.code ? ` (${err.message})` : '');
+      note.classList.add('bad'); note.hidden = false;
+      syncVariant(); $('#ph-model-note').hidden = false;
     }
-    S.modelBusy = false; btn.disabled = false;
+    S.modelBusy = false; btn.disabled = false; $('#ph-save').disabled = false;
   };
   const aspect = () => S.result ? S.result.canvas.height / S.result.canvas.width : 1;
   const usingModel = () => S.variant === 'model' && S.model && S.modelProps;

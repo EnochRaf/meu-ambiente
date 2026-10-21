@@ -47,11 +47,14 @@ const fal = {
     const j = await r.json();
     return j.request_id;
   },
+  // status and result live under the app id (owner/app), whatever subpath the endpoint has
+  app() { return this.model().split('/').slice(0, 2).join('/'); },
   async status(id) {
-    const base = `https://queue.fal.run/${this.model()}/requests/${encodeURIComponent(id)}`;
+    const base = `https://queue.fal.run/${this.app()}/requests/${encodeURIComponent(id)}`;
     const s = await fetch(`${base}/status`, { headers: this.headers() });
     if (s.status === 404) return { state: 'failed', detail: 'unknown job' };
     const j = await s.json().catch(() => ({}));
+    if (!s.ok) { console.error('make3d status', s.status, JSON.stringify(j).slice(0, 300)); return { state: 'failed', detail: `status ${s.status}` }; }
     if (j.status === 'IN_QUEUE') return { state: 'queued', position: j.queue_position };
     if (j.status === 'IN_PROGRESS') return { state: 'running' };
     if (j.status !== 'COMPLETED') return { state: 'failed', detail: j.status || `status ${s.status}` };
