@@ -166,7 +166,9 @@ How the app works and where things are. The short version is in the README.
   memory (`MAKE3D_DAILY_CAP`, `MAKE3D_IP_CAP`). The GLB is stored with the
   item in IndexedDB; `loadModelBlob` parses it once, stands it on the floor,
   centres it and gives its materials the lamp field, and the size step takes
-  the model's own proportions. `src/make3d.js` is the client. With no key the
+  the model's own proportions. Generated textures come back darker and warmer
+  than the photo, so each material gets a colour multiplier that brings the
+  texture's average colour to the cutout's (`matchModelColour`). `src/make3d.js` is the client. With no key the
   button is hidden; `MAKE3D_PROVIDER=mock` serves `tmp/mock-model.glb` locally.
 - AI models (downloaded only when asked, cached by the browser): BiRefNet lite
   (MIT, WebGPU, 115 MB) with U²-Net-p (Apache 2.0, 4.6 MB, WASM, served with

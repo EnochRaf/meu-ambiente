@@ -156,6 +156,39 @@ export function loadModelBlob(blob, key = blob) {
 export const forgetModel = (key) => parsed.delete(key);
 export const modelProportions = async (blob) => (await loadModelBlob(blob)).size;
 
+// Generated textures come back darker and warmer than the photo they were made
+// from (the texture pass tries to remove the photo's light and overshoots), so
+// the model's materials get a colour multiplier that brings the average colour
+// of the texture to the average colour of the cutout. Done once per model.
+const lin = (v) => { v /= 255; return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+function meanColour(image, w, h) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(image, 0, 0, w, h);
+  const d = g.getImageData(0, 0, w, h).data; let r = 0, gg = 0, b = 0, n = 0;
+  for (let i = 0; i < d.length; i += 4) { if (d[i + 3] < 200) continue; r += lin(d[i]); gg += lin(d[i + 1]); b += lin(d[i + 2]); n++; }
+  return n ? [r / n, gg / n, b / n] : null;
+}
+async function matchModelColour(parsedModel, cutout) {
+  if (parsedModel.colourMatched) return; parsedModel.colourMatched = true;
+  try {
+    const bmp = await createImageBitmap(cutout);
+    const want = meanColour(bmp, 96, Math.max(8, Math.round(96 * bmp.height / bmp.width)));
+    if (!want) return;
+    const seen = new Set();
+    parsedModel.scene.traverse((o) => {
+      if (!o.isMesh) return;
+      for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
+        if (seen.has(m) || !m.map?.image) continue; seen.add(m);
+        const have = meanColour(m.map.image, 64, 64); if (!have) continue;
+        const gain = want.map((v, i) => Math.min(2.6, Math.max(0.6, v / Math.max(1e-3, have[i]))));
+        m.color.setRGB(gain[0], gain[1], gain[2]); // multiplies the texture in linear light
+        if (m.roughness > 0.9) m.roughness = 0.85; // matte fabric, not chalk
+        m.needsUpdate = true;
+      }
+    });
+  } catch (e) { console.warn('colour match', e); }
+}
+
 // ---- catalog definitions -------------------------------------------------------------
 // rec: { id, name, kind, size (metres: floor [w,d,h], wall [w,h,d]), blob, depth?, model?, category?,
 //        match?: { base: 'sofa', finish: {mat,color} } }
@@ -218,7 +251,9 @@ export async function makeCustomDef(rec, defs = null) {
     };
   }
   if (rec.model) {
-    const { scene, size } = await loadModelBlob(rec.model, rec.id); // parsed once per item, however often it is rebuilt
+    const parsedModel = await loadModelBlob(rec.model, rec.id); // parsed once per item, however often it is rebuilt
+    const { scene, size } = parsedModel;
+    if (rec.blob) await matchModelColour(parsedModel, rec.blob);
     const wall = rec.kind === 'wall';
     const [W, D, H] = wall ? [rec.size[0], rec.size[2], rec.size[1]] : rec.size;
     // one uniform scale: the width is what the person set, depth and height follow the model
