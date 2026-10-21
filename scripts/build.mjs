@@ -1,7 +1,8 @@
 // The production build: copies just what the site needs (the page, its styles,
 // the app's modules and the assets) into dist/, and checks that every file the
 // app's modules import is there. No bundler: the browser loads the ES modules
-// as they are, and three.js and the AI libraries come from jsDelivr.
+// as they are, and three.js and the AI libraries come from jsDelivr. api/ is not
+// copied: Vercel deploys api/make3d.js as a function beside the static site.
 // Usage: node scripts/build.mjs   (npm run build)
 import { cpSync, rmSync, mkdirSync, readdirSync, readFileSync, existsSync, statSync } from 'node:fs';
 import { join, dirname, resolve, relative } from 'node:path';

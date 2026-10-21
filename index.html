@@ -65,6 +65,7 @@
   <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></symbol>
   <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-cube" viewBox="0 0 24 24"><path d="M12 3 4 7.5v9L12 21l8-4.5v-9z"/><path d="M4 7.5 12 12l8-4.5M12 12v9"/></symbol>
   <symbol id="i-photo" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="m21 15-4.5-4.5L9 18"/></symbol>
   <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
   <symbol id="i-recentre" viewBox="0 0 24 24"><path d="M4 9V5h4M20 9V5h-4M4 15v4h4M20 15v4h-4"/><circle cx="12" cy="12" r="2.5"/></symbol>
@@ -167,7 +168,7 @@
       <div>
         <h4 data-i18n="photo.bestResult">For the best result</h4>
         <ul id="ph-tips" class="tips"></ul>
-        <p class="muted" data-i18n="photo.private">The background is removed in your browser; nothing is uploaded anywhere.</p>
+        <p class="muted" data-i18n="photo.private">The cutout and its depth are worked out in your browser; nothing is uploaded anywhere.</p>
       </div>
     </div>
     <div class="row right"><button id="ph-cancel" class="btn" data-i18n="action.cancel">Cancel</button><button id="ph-next1" class="btn primary" disabled data-i18n="action.next">Next</button></div>
@@ -198,7 +199,7 @@
     <h3 data-i18n="photo.step3">Size and preview</h3>
     <div class="ph-grid wide">
       <div>
-        <div class="row"><label class="field grow"><span data-i18n="photo.whatIsIt">What is it?</span><select id="ph-cat"></select></label><button id="ph-detect" class="btn small" data-i18n="photo.detect">Detect</button></div>
+        <div class="row ctl-row"><label class="field grow"><span data-i18n="photo.whatIsIt">What is it?</span><select id="ph-cat"></select></label><button id="ph-detect" class="btn" data-i18n="photo.detect">Detect</button></div>
         <p id="ph-detect-note" class="muted"></p>
         <p id="ph-typical" class="muted"></p>
         <div id="ph-dims">
@@ -213,8 +214,15 @@
         <div id="ph-variant" class="variants">
           <button data-variant="photo" class="on"><img id="ph-prev-photo" alt=""><span data-i18n="photo.cutoutVariant">Photo cutout</span></button>
           <button data-variant="3d" id="ph-var-3d"><img id="ph-prev-3d" alt=""><span data-i18n="photo.matchedVariant">Matched 3D</span></button>
+          <button data-variant="model" id="ph-var-model" disabled><img id="ph-prev-model" alt=""><span data-i18n="photo.modelVariant">Full 3D model</span></button>
         </div>
-        <p id="ph-match-note" class="muted"></p>
+        <p id="ph-depth-note" class="muted"></p>
+        <p id="ph-match-note" class="muted" hidden></p>
+        <p id="ph-model-note" class="muted" hidden></p>
+        <div id="ph-model-row" class="make-row" hidden>
+          <button id="ph-make-model" class="btn dark"><svg><use href="#i-cube"/></svg><span data-i18n="photo.makeModel">Make the full 3D model</span></button>
+          <p class="muted" data-i18n="photo.makeModelHint">Sends the cutout to a 3D service and takes about a minute. The only step that leaves your browser.</p>
+        </div>
       </div>
     </div>
     <div class="row right"><button id="ph-back3" class="btn" data-i18n="action.back">Back</button><button id="ph-save" class="btn primary" data-i18n="photo.save">Add to my items</button></div>

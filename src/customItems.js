@@ -1,11 +1,15 @@
 // Photo items: turn an uploaded picture into a cutout, keep it in IndexedDB and
-// expose catalog definitions. Two flavours: an extruded photo cutout, or a
-// catalog piece recoloured from the photo ("matched 3D").
+// expose catalog definitions. Two flavours: the photo as a solid with real
+// depth (a relief built from an on-device depth model, see relief.js and
+// depth.js), or a catalog piece recoloured from the photo ("matched 3D").
 import * as THREE from 'three';
-import { backgroundMask, cropBounds, bleedEdges, extrudeMask, erodeMask, featherMaskRadius, defringe, sharpness, tiltHint, dominantColors, rgbToHex, silhouette } from './cutout.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { backgroundMask, cropBounds, bleedEdges, erodeMask, featherMaskRadius, defringe, sharpness, tiltHint, dominantColors, rgbToHex } from './cutout.js';
+import { sampleGrid, normalizeDepth, reliefMesh, pillowDepth } from './relief.js';
 import { MATERIAL_BY_ID } from './materials.js';
+import { patchLamps } from './lamps.js';
 
-const DB = 'roomsmith', STORE = 'customItems', MAX_SIDE = 1024, GRID = 96, OUTLINE_GRID = 160;
+const DB = 'roomsmith', STORE = 'customItems', MAX_SIDE = 1024, RELIEF_GRID = 160;
 export const CUSTOM_PREFIX = 'c_';
 
 // ---- IndexedDB -------------------------------------------------------------------
@@ -101,83 +105,109 @@ export function finishCutout(canvas, mask, { erode = 1, feather = 2, crop = null
 
 export const canvasToBlob = (c) => new Promise((resolve) => c.toBlob(resolve, 'image/png'));
 
-// ---- catalog definitions -------------------------------------------------------------
-// rec: { id, name, kind, size (metres: floor [w,d,h], wall [w,h,d]), blob, category?,
-//        match?: { base: 'sofa', finish: {mat,color} } }
-let contactTex = null;
-function contactShadow(w, d) {
-  if (!contactTex) {
-    const c = document.createElement('canvas'); c.width = c.height = 128;
-    const ctx = c.getContext('2d');
-    const g = ctx.createRadialGradient(64, 64, 10, 64, 64, 64);
-    g.addColorStop(0, 'rgba(0,0,0,0.55)'); g.addColorStop(0.6, 'rgba(0,0,0,0.25)'); g.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = g; ctx.fillRect(0, 0, 128, 128);
-    contactTex = new THREE.CanvasTexture(c);
-  }
-  const m = new THREE.Mesh(new THREE.PlaneGeometry(w * 1.25, d * 1.4), new THREE.MeshBasicMaterial({ map: contactTex, transparent: true, depthWrite: false, opacity: 0.8 }));
-  m.rotation.x = -Math.PI / 2; m.position.y = 0.004; m.renderOrder = 1; m.userData.contact = true;
-  return m;
+// ---- depth --------------------------------------------------------------------------
+// Relative depth from the model (bigger = nearer) for a region of the photo,
+// made 0..1 over the object and packed into a PNG (16 bits: high byte in red,
+// low byte in green) so it can be stored with the item without banding.
+// `alpha` is the cutout's alpha at the same size.
+export function depthToBlob(depth, alpha, w, h) {
+  const d = normalizeDepth(depth, alpha, w, h, { blur: 2, passes: 1 });
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const img = c.getContext('2d').createImageData(w, h);
+  for (let i = 0; i < w * h; i++) { const v = Math.round(d[i] * 65535); img.data[i * 4] = v >> 8; img.data[i * 4 + 1] = v & 255; img.data[i * 4 + 2] = 0; img.data[i * 4 + 3] = 255; }
+  c.getContext('2d').putImageData(img, 0, 0);
+  return canvasToBlob(c);
 }
-
-function legacyGeometry(cells, gw, gh, dims) {
-  const g = extrudeMask(cells, gw, gh, dims);
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(g.positions, 3));
-  geo.setAttribute('normal', new THREE.BufferAttribute(g.normals, 3));
-  geo.setAttribute('uv', new THREE.BufferAttribute(g.uvs, 2));
-  geo.setIndex(new THREE.BufferAttribute(g.indices, 1));
-  geo.addGroup(0, g.frontCount, 0);
-  geo.addGroup(g.frontCount, g.indices.length - g.frontCount, 1);
-  return geo;
-}
-
-// Smooth silhouette: trace the alpha outline on a fine grid, extrude it with a
-// small bevel, map the front to the photo and let every other face sample the
-// photo at the outline so sides and back carry the edge colours.
-function outlineGeometry(bmp, { width, height, depth, kind }) {
-  const gw = bmp.width >= bmp.height ? OUTLINE_GRID : Math.max(8, Math.round(OUTLINE_GRID * bmp.width / bmp.height));
-  const gh = bmp.width >= bmp.height ? Math.max(8, Math.round(OUTLINE_GRID * bmp.height / bmp.width)) : OUTLINE_GRID;
-  const c = document.createElement('canvas'); c.width = gw; c.height = gh;
-  const ctx = c.getContext('2d', { willReadFrequently: true }); ctx.drawImage(bmp, 0, 0, gw, gh);
-  const a = ctx.getImageData(0, 0, gw, gh).data;
-  const cells = new Uint8Array(gw * gh);
-  for (let i = 0; i < gw * gh; i++) cells[i] = a[i * 4 + 3] > 110 ? 1 : 0;
-  const sil = silhouette(cells, gw, gh, { epsilon: 0.9 });
-  if (!sil) return new THREE.BoxGeometry(width, height, depth);
-  const y0 = kind === 'wall' ? -height / 2 : 0;
-  const toXY = ([cx, cy]) => new THREE.Vector2(-width / 2 + (cx / gw) * width, y0 + height - (cy / gh) * height);
-  const shape = new THREE.Shape(sil.outer.map(toXY));
-  for (const h of sil.holes) shape.holes.push(new THREE.Path(h.map(toXY)));
-  // rounded front and back edges so the piece reads as a solid, not a box
-  const bevel = Math.min(0.06, depth / 4, width / 16, height / 16);
-  const uvOf = (x, y) => [(x + width / 2) / width, (y - y0) / height];
-  // side walls sample the photo a little inside the outline, so they take the
-  // object's body colour rather than the anti-aliased rim
-  const inset = (u, v) => [u + (0.5 - u) * 0.14, v + (0.5 - v) * 0.14];
-  const UV = {
-    generateTopUV: (g, v, i0, i1, i2) => [i0, i1, i2].map((i) => new THREE.Vector2(...uvOf(v[i * 3], v[i * 3 + 1]))),
-    generateSideWallUV: (g, v, i0, i1, i2, i3) => [i0, i1, i2, i3].map((i) => new THREE.Vector2(...inset(...uvOf(v[i * 3], v[i * 3 + 1])))),
-  };
-  let geo = new THREE.ExtrudeGeometry(shape, { depth: Math.max(0.01, depth - 2 * bevel), bevelEnabled: bevel > 0.004, bevelThickness: bevel, bevelSize: bevel * 0.9, bevelSegments: 3, curveSegments: 4, UVGenerator: UV });
-  // ExtrudeGeometry runs from z = 0 to z = depth; floor items are centred, wall items start at the wall
-  geo.translate(0, 0, kind === 'wall' ? bevel : -depth / 2 + bevel);
-  // regroup: front-facing cap triangles get material 0, everything else material 1
-  const pos = geo.attributes.position.array, nor = geo.attributes.normal.array, uv = geo.attributes.uv.array;
-  const n = pos.length / 9, front = [], rest = [];
-  for (let t = 0; t < n; t++) (nor[t * 9 + 2] > 0.9 && nor[t * 9 + 5] > 0.9 && nor[t * 9 + 8] > 0.9 ? front : rest).push(t);
-  const order = front.concat(rest);
-  const P = new Float32Array(pos.length), N = new Float32Array(nor.length), U = new Float32Array(uv.length);
-  order.forEach((t, k) => { P.set(pos.subarray(t * 9, t * 9 + 9), k * 9); N.set(nor.subarray(t * 9, t * 9 + 9), k * 9); U.set(uv.subarray(t * 6, t * 6 + 6), k * 6); });
-  const out = new THREE.BufferGeometry();
-  out.setAttribute('position', new THREE.BufferAttribute(P, 3));
-  out.setAttribute('normal', new THREE.BufferAttribute(N, 3));
-  out.setAttribute('uv', new THREE.BufferAttribute(U, 2));
-  out.addGroup(0, front.length * 3, 0);
-  out.addGroup(front.length * 3, rest.length * 3, 1);
+// the stored depth back to 0..1 (also reads the older 8-bit grey form)
+function decodeDepth(px, n) {
+  const out = new Float32Array(n);
+  for (let i = 0; i < n; i++) { const r = px[i * 4], g = px[i * 4 + 1], b = px[i * 4 + 2]; out[i] = b === r && g === r ? r / 255 : (r * 256 + g) / 65535; }
   return out;
 }
 
-export async function makeCustomDef(rec, defs = null, { legacy = false } = {}) {
+// ---- full 3D models ----------------------------------------------------------------------
+// A GLB made from the photo (see make3d.js): parsed once per blob, stood on the
+// floor and centred, with our lamp field on its materials. `proportions` is the
+// model's own width : depth : height so the size step can keep them.
+const parsed = new WeakMap(); // blob -> Promise<{ scene, size }>
+let gltfLoader = null;
+export function loadModelBlob(blob) {
+  if (parsed.has(blob)) return parsed.get(blob);
+  const pr = (async () => {
+    gltfLoader ??= new GLTFLoader();
+    const buf = await blob.arrayBuffer();
+    const gltf = await new Promise((resolve, reject) => gltfLoader.parse(buf, '', resolve, reject));
+    const root = gltf.scene; root.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(root), size = box.getSize(new THREE.Vector3()), c = box.getCenter(new THREE.Vector3());
+    // some generators export z-up: a model much flatter than it is tall, lying on z = 0
+    if (Math.abs(box.max.z) < 1e-3 && size.z > size.y * 1.6) { root.rotation.x = -Math.PI / 2; root.updateMatrixWorld(true); box.setFromObject(root); box.getSize(size); box.getCenter(c); }
+    root.position.set(-c.x, -box.min.y, -c.z); // centred, standing on y = 0
+    root.traverse((o) => {
+      if (!o.isMesh) return;
+      o.castShadow = o.receiveShadow = true;
+      for (const m of Array.isArray(o.material) ? o.material : [o.material]) { if (m.map) m.map.anisotropy = 8; m.envMapIntensity = 1; if (m.transparent && m.opacity > 0.95) { m.transparent = false; m.alphaTest = 0.5; } patchLamps(m, null, '-model'); }
+    });
+    const holder = new THREE.Group(); holder.add(root);
+    return { scene: holder, size: [size.x, size.z, size.y] }; // width, depth, height in the model's units
+  })();
+  parsed.set(blob, pr);
+  return pr;
+}
+export const modelProportions = async (blob) => (await loadModelBlob(blob)).size;
+
+// ---- catalog definitions -------------------------------------------------------------
+// rec: { id, name, kind, size (metres: floor [w,d,h], wall [w,h,d]), blob, depth?, model?, category?,
+//        match?: { base: 'sofa', finish: {mat,color} } }
+// Grid-sampled alpha (and depth, when there is one) of a cutout bitmap: read at
+// full size, averaged onto the grid, then the depth is smoothed a little so the
+// model's fine ripples never show as ridges under a low sun.
+function gridOf(bmp, depthBmp) {
+  const w = bmp.width, h = bmp.height;
+  const gw = w >= h ? RELIEF_GRID : Math.max(8, Math.round(RELIEF_GRID * w / h));
+  const gh = w >= h ? Math.max(8, Math.round(RELIEF_GRID * h / w)) : RELIEF_GRID;
+  const read = (image) => {
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const ctx = c.getContext('2d', { willReadFrequently: true }); ctx.drawImage(image, 0, 0, w, h);
+    return ctx.getImageData(0, 0, w, h).data;
+  };
+  const a = read(bmp), alpha = new Uint8Array(w * h);
+  for (let i = 0; i < w * h; i++) alpha[i] = a[i * 4 + 3];
+  if (!depthBmp) { const g = sampleGrid(alpha, null, w, h, gw, gh); return { gw, gh, alpha: g.alpha, depth: normalizeDepth(pillowDepth(g.alpha, gw, gh), g.alpha, gw, gh) }; }
+  const g = sampleGrid(alpha, decodeDepth(read(depthBmp), w * h), w, h, gw, gh);
+  return { gw, gh, alpha: g.alpha, depth: normalizeDepth(g.depth, g.alpha, gw, gh, { blur: 2, passes: 3 }) };
+}
+
+// The piece as a solid: the photo on a sculpted front, sides and a flat back
+// that carry the edge colours. Falls back to a box when nothing is left.
+function reliefGeometry(bmp, depthBmp, { width, height, depth, kind }) {
+  const g = gridOf(bmp, depthBmp);
+  const m = reliefMesh(g.alpha, g.depth, g.gw, g.gh, { width, height, depth, kind });
+  if (!m) return new THREE.BoxGeometry(width, height, depth);
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(m.positions, 3));
+  geo.setAttribute('normal', new THREE.BufferAttribute(m.normals, 3));
+  geo.setAttribute('uv', new THREE.BufferAttribute(m.uvs, 2));
+  geo.setIndex(new THREE.BufferAttribute(m.indices, 1));
+  geo.addGroup(0, m.frontCount, 0);
+  geo.addGroup(m.frontCount, m.indices.length - m.frontCount, 1);
+  return geo;
+}
+
+// The photo as the surface itself: an sRGB colour map on a matt, lamp-lit
+// material (the photo already carries its own highlights and texture). The
+// finish chosen in the room tints it and sets how glossy it is; white keeps the
+// photo's own colours.
+function photoMaterials(tex, finish) {
+  const def = MATERIAL_BY_ID[finish?.mat] || MATERIAL_BY_ID.fabric;
+  const color = new THREE.Color(/^#[0-9a-f]{6}$/i.test(finish?.color || '') ? finish.color : '#ffffff');
+  const rough = Math.max(0.45, def.roughness);
+  const front = new THREE.MeshPhysicalMaterial({ map: tex, color, roughness: rough, metalness: 0, sheen: def.sheen ? 0.18 : 0, sheenRoughness: 0.8, sheenColor: new THREE.Color('#ffffff'), clearcoat: def.clearcoat ? 0.15 : 0, clearcoatRoughness: 0.4, envMapIntensity: 0.65 });
+  const side = new THREE.MeshPhysicalMaterial({ map: tex, color: color.clone().multiplyScalar(0.82), roughness: Math.min(1, rough + 0.1), metalness: 0, envMapIntensity: 0.5 });
+  for (const m of [front, side]) { m.userData.matId = 'photo'; m.userData.reflect = 0; patchLamps(m, null, '-photo'); }
+  return [front, side];
+}
+
+export async function makeCustomDef(rec, defs = null) {
   const base = rec.match && defs ? defs[rec.match.base] : null;
   if (base) {
     return {
@@ -186,32 +216,42 @@ export async function makeCustomDef(rec, defs = null, { legacy = false } = {}) {
       build: base.build,
     };
   }
+  if (rec.model) {
+    const { scene, size } = await loadModelBlob(rec.model);
+    const wall = rec.kind === 'wall';
+    const [W, D, H] = wall ? [rec.size[0], rec.size[2], rec.size[1]] : rec.size;
+    // one uniform scale: the width is what the person set, depth and height follow the model
+    const k = Math.min(W / Math.max(size[0], 1e-6), H / Math.max(size[2], 1e-6), D / Math.max(size[1], 1e-6));
+    return {
+      id: rec.id, name: rec.name, kind: rec.kind, size: rec.size, custom: true, category: rec.category, model: true,
+      finish: { mat: rec.finishMat || 'fabric', color: '#ffffff' },
+      build(group) {
+        const inst = scene.clone(true); inst.scale.setScalar(k);
+        if (wall) inst.position.set(0, -H / 2, size[1] * k / 2);
+        group.add(inst);
+      },
+    };
+  }
   const bmp = await createImageBitmap(rec.blob);
+  const depthBmp = rec.depth ? await createImageBitmap(rec.depth).catch(() => null) : null;
   const tex = new THREE.Texture(bmp);
-  tex.colorSpace = THREE.SRGBColorSpace; tex.needsUpdate = true; tex.anisotropy = 4;
-  const G = legacy ? 72 : GRID;
-  const gw = bmp.width >= bmp.height ? G : Math.max(6, Math.round(G * bmp.width / bmp.height));
-  const gh = bmp.width >= bmp.height ? Math.max(6, Math.round(G * bmp.height / bmp.width)) : G;
-  const c = document.createElement('canvas'); c.width = gw; c.height = gh;
-  const ctx = c.getContext('2d'); ctx.drawImage(bmp, 0, 0, gw, gh);
-  const a = ctx.getImageData(0, 0, gw, gh).data;
-  const cells = new Uint8Array(gw * gh);
-  for (let i = 0; i < gw * gh; i++) cells[i] = a[i * 4 + 3] > 110 ? 1 : 0;
+  tex.colorSpace = THREE.SRGBColorSpace; tex.needsUpdate = true; tex.anisotropy = 8;
   const wall = rec.kind === 'wall';
   const [width, height, depth] = wall ? [rec.size[0], rec.size[1], rec.size[2]] : [rec.size[0], rec.size[2], rec.size[1]];
-  const geo = legacy ? legacyGeometry(cells, gw, gh, { width, height, depth, kind: rec.kind }) : outlineGeometry(bmp, { width, height, depth, kind: rec.kind });
+  const geo = reliefGeometry(bmp, depthBmp, { width, height, depth, kind: rec.kind });
+  const materials = new Map(); // one pair per finish, shared by every copy in the room
+  const own = { mat: rec.finishMat || 'fabric', color: '#ffffff' };
   return {
-    id: rec.id, name: rec.name, kind: rec.kind, size: rec.size, custom: true, category: rec.category,
-    finish: { mat: rec.finishMat || 'fabric', color: '#ffffff' },
-    build(group, P) {
-      if (legacy) { const m = P.clone(); m.map = tex; m.needsUpdate = true; const mesh = new THREE.Mesh(geo, m); mesh.castShadow = mesh.receiveShadow = true; group.add(mesh); return; }
-      const front = P.clone(); front.map = tex; front.normalMap = null; front.roughnessMap = null; front.needsUpdate = true; // the photo carries its own detail
-      // sides and back: the same picture, darkened, so the edges carry the photo's colours
-      const side = P.clone(); side.map = tex; side.color.multiplyScalar(0.9); side.roughness = Math.min(1, P.roughness + 0.1); side.needsUpdate = true;
-      const mesh = new THREE.Mesh(geo, [front, side]);
-      mesh.castShadow = mesh.receiveShadow = true;
+    id: rec.id, name: rec.name, kind: rec.kind, size: rec.size, custom: true, category: rec.category, relief: !!depthBmp,
+    finish: own,
+    build(group, _P, finish = own) {
+      const key = `${finish.mat}|${finish.color}`;
+      if (!materials.has(key)) materials.set(key, photoMaterials(tex, finish));
+      const mesh = new THREE.Mesh(geo, materials.get(key));
+      // casts shadows but does not take the sun's: the photo carries its own shading, and the
+      // shadow map would stripe the relief's shallow slopes (lamp shadows are unaffected)
+      mesh.castShadow = true; mesh.receiveShadow = false;
       group.add(mesh);
-      if (rec.kind === 'floor') group.add(contactShadow(width, depth));
     },
   };
 }

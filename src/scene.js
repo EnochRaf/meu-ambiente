@@ -297,7 +297,7 @@ export function createScene(container) {
         if (rec) { itemsGroup.remove(rec.group); unregisterLamps(rec.group); disposeTree(rec.group); }
         const group = buildItemMesh(def, finish);
         registerLamps(group);
-        if (def.kind === 'floor' && !def.custom) group.add(contactBlob(def));
+        if (def.kind === 'floor') group.add(contactBlob(def));
         group.traverse((o) => { o.userData.itemId = item.id; });
         itemsGroup.add(group);
         rec = { group, sig };

@@ -43,8 +43,11 @@ noite aconchegante, com uma vista de verdade pelas janelas.
   daylight slider and lamp control. The image keeps refining while you look.
 - **Window views from real photos**: a garden, the sea or a city skyline, at
   day, sunset or night, with gentle depth as you move around.
-- **Your own furniture from a photo**: the background is cut away by an AI
-  model that runs in your browser. Nothing is uploaded.
+- **Your own furniture from a photo**: the background is cut away and the
+  piece gets real depth from AI models that run in your browser, so a sofa from
+  a photo has cushions that come forward and arms with real sides. Nothing is
+  uploaded. Optionally, one click more sends the cutout to a 3D service that
+  makes up the back and sides, for a full model you can walk around.
 - **Made to be easy**: a calm side panel with pictures for every choice, hover
   descriptions, a short tour, undo and redo, light and dark mode, and a full
   view that hides everything but the room.
@@ -66,13 +69,18 @@ npm run preview    # build, then serve dist/ at http://127.0.0.1:8765/
 `npm install` is only needed for the dev tools (asset pipelines, browser
 checks, screenshots). How it all works is in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
 
+The optional full 3D model needs a [fal.ai](https://fal.ai) key: set `FAL_KEY`
+(locally in the shell before `npm start`, on Vercel under Environment
+Variables). Without it the button does not appear; locally without a key a
+mock serves `tmp/mock-model.glb` if that file exists.
+
 The site is static. On Vercel, `vercel.json` sets everything: it installs
 nothing, runs `npm run build` and publishes `dist/`.
 
 ## Credits
 
 3D models, textures and window panoramas come from [Poly Haven](https://polyhaven.com)
-(CC0). The AI models (BiRefNet lite, U²-Net-p, CLIP), libraries (three.js,
+(CC0). The AI models (BiRefNet lite, U²-Net-p, CLIP, Depth Anything V2), libraries (three.js,
 Transformers.js, ONNX Runtime Web) and fonts (Plus Jakarta Sans, Fraunces) are
 under MIT, Apache 2.0 or SIL OFL licences. The full list, with authors, is in
 [ASSETS.md](ASSETS.md) and in the app under Settings › About and credits.

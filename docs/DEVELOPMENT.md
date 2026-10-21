@@ -137,15 +137,47 @@ How the app works and where things are. The short version is in the README.
   AI model, straighten, erase/restore brushes, crop, automatic trim, eroded and
   feathered edges with colour defringing), Size and preview (what it is, typical
   real dimensions, photo proportions kept, a 170 cm person for scale, a choice
-  between the extruded photo cutout and a matched catalog piece recoloured from
+  between the photo as a solid and a matched catalog piece recoloured from
   the photo's main colour). Floor items stand on the floor with a soft contact
   shadow and a footprint of their real width and depth; wall items hang at a
-  sensible height. The cutout has real thickness with sides and back coloured
-  from the photo. Saved in IndexedDB.
+  sensible height. Saved in IndexedDB, with the depth map.
+- The photo as a solid ("From the photo"): a depth model reads the photo once
+  (relative depth, nearer = bigger); the cutout's alpha and depth are sampled on
+  a 160-cell grid and `relief.js` builds a mesh from them: a sculpted front
+  whose thickness follows the depth (cushions and arms come forward, backs sit
+  behind), a flat back, and sides along the outline that sample the photo a
+  little inside the edge for a solid body colour. Nodes at the edge snap to
+  where the alpha crosses the threshold, so the outline is smooth, not stepped;
+  small gaps the matte missed are closed, flecks are dropped, and the rim rounds
+  over a few centimetres (the solid mask softened over the bevel's width, so no
+  grid contours show). The outline loop is smoothed with a wide Taubin stencil
+  and the sides take per-node normals, so neither stair steps nor facets show
+  under a low sun; the photo item casts shadows but does not receive the sun's
+  (its slopes would stripe) while lamp light and lamp shadows apply as usual. Without a depth map (the model could not run) the piece swells
+  towards its middle instead ("pillow"). The photo is an sRGB colour map on a
+  matt material that takes lamp light and lamp shadows like everything else.
+  The maths is pure and tested (`test/relief.test.js`).
+- The full 3D model (optional, "Make the full 3D model" on the size step): the
+  cutout PNG goes to `/api/make3d` (`api/make3d.js`, a Vercel function that
+  `scripts/serve.mjs` also runs), which submits it to a provider through the
+  fal.ai queue (default `fal-ai/hunyuan3d/v2`, textured, about $0.5 a piece),
+  reports the state while the browser polls, and streams the GLB back. The key
+  stays on the server; per-instance daily and per-address caps are in
+  memory (`MAKE3D_DAILY_CAP`, `MAKE3D_IP_CAP`). The GLB is stored with the
+  item in IndexedDB; `loadModelBlob` parses it once, stands it on the floor,
+  centres it and gives its materials the lamp field, and the size step takes
+  the model's own proportions. `src/make3d.js` is the client. With no key the
+  button is hidden; `MAKE3D_PROVIDER=mock` serves `tmp/mock-model.glb` locally.
 - AI models (downloaded only when asked, cached by the browser): BiRefNet lite
   (MIT, WebGPU, 115 MB) with U²-Net-p (Apache 2.0, 4.6 MB, WASM, served with
-  the app) as the fallback for the cutout, and CLIP ViT-B/32 (MIT, zero-shot,
-  about 90 MB) for "Detect". Everything runs locally; nothing is uploaded.
+  the app) as the fallback for the cutout, CLIP ViT-B/32 (MIT, zero-shot,
+  about 90 MB) for "Detect", and Depth Anything V2 small (Apache 2.0, fp16 on
+  WebGPU 50 MB, 8-bit on WASM 27 MB) for the depth of photo items. Everything
+  runs locally; nothing is uploaded. The cutout model needs more storage
+  buffers per shader stage than Apple GPUs report (10), so it runs on WASM
+  there; the depth model is fine with 10 and uses WebGPU whenever an adapter
+  exists (about 0.2 s a picture on an M-series Mac, 15 s on WASM), falling
+  back to WASM if a probe run fails.
 - Undo/redo with Cmd+Z and Shift+Cmd+Z (Ctrl on Windows and Linux).
 - Layouts autosave to localStorage. "Copy share link" puts the whole project
   in the URL fragment (`#p=…`, deflate + base64url). Photo items stay on the
@@ -157,10 +189,13 @@ How the app works and where things are. The short version is in the README.
 - `src/state.js` project model, store, autosave, share links (tested)
 - `src/roomTypes.js` room presets (tested)
 - `src/materials.js` material list and procedural textures
-- `src/cutout.js` background removal, feathering, silhouette extrusion (tested)
+- `src/cutout.js` background removal, feathering, silhouette tracing (tested)
+- `src/relief.js` the relief mesh of a photo item from its alpha and depth (tested)
 - `src/customItems.js` photo items: IndexedDB store, cutout pipeline, catalog builder
 - `src/photoDialog.js` the three-step photo dialog
 - `src/segment.js` on-device AI background removal
+- `src/depth.js` on-device depth estimation for photo items
+- `src/make3d.js` the client of the full-3D-model service; `api/make3d.js` the function itself
 - `src/classify.js` categories with typical sizes, CLIP detection, material guess
 - `src/catalog.js` furniture definitions and procedural shapes (tested)
 - `src/scene.js` three.js scene, lighting, picking, highlights

@@ -13,6 +13,8 @@ needed. The same list, with links, is in the app under Settings › About and cr
 | BiRefNet lite (AI cutout on WebGPU, from Hugging Face) | Peng Zheng et al. | MIT |
 | U²-Net-p (AI cutout without WebGPU, served with the app) | Xuebin Qin et al. | Apache 2.0 |
 | CLIP ViT-B/32 (suggests what a photo shows, from Hugging Face) | OpenAI | MIT |
+| Depth Anything V2 small (gives photo items their depth, from Hugging Face) | Lihe Yang et al. | Apache 2.0 |
+| Hunyuan3D 2 through fal.ai (optional full 3D models; paid, server side) | Tencent / fal.ai | fal.ai terms; outputs are the user's |
 | Plus Jakarta Sans, Fraunces (Google Fonts) | Tokotype, Undercase Type | SIL OFL 1.1 |
 
 ## AI models
@@ -27,6 +29,10 @@ Downloaded only when someone adds a piece from a photo, and cached by the browse
   (CC BY-NC 4.0) does not allow commercial use.
 - **CLIP ViT-B/32**, `Xenova/clip-vit-base-patch32` (quantised, about 90 MB), the
   ONNX export of OpenAI's CLIP, MIT. https://github.com/openai/CLIP
+- **Depth Anything V2 small**, `onnx-community/depth-anything-v2-small` (fp16,
+  50 MB on WebGPU; 8-bit, 27 MB on WASM), Apache 2.0. Only the small model is
+  Apache 2.0; the base and large ones are CC BY-NC 4.0 and are not used.
+  https://github.com/DepthAnything/Depth-Anything-V2
 
 ## Poly Haven (CC0 1.0)
 

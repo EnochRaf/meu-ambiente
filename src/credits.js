@@ -9,6 +9,7 @@ export const CREDITS = {
     { name: 'BiRefNet lite', by: 'Peng Zheng et al.', licence: 'MIT', url: 'https://huggingface.co/onnx-community/BiRefNet_lite-ONNX' },
     { name: 'U²-Net-p', by: 'Xuebin Qin et al.', licence: 'Apache 2.0', url: 'https://github.com/xuebinqin/U-2-Net' },
     { name: 'CLIP ViT-B/32', by: 'OpenAI', licence: 'MIT', url: 'https://huggingface.co/Xenova/clip-vit-base-patch32' },
+    { name: 'Depth Anything V2 small', by: 'Lihe Yang et al.', licence: 'Apache 2.0', url: 'https://huggingface.co/onnx-community/depth-anything-v2-small' },
   ],
   libraries: [
     { name: 'three.js', by: 'three.js authors', licence: 'MIT', url: 'https://threejs.org' },
