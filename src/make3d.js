@@ -3,7 +3,8 @@
 // This is the one path in the app that leaves the browser, so the dialog says
 // so before anything is sent. `onStatus` gets 'sending' | 'queued' | 'running'
 // | 'downloading' as things move.
-const API = new URL('../api/make3d', import.meta.url).pathname;
+// the route beside the site (a server function, not a file: built without new URL so the build's file scan skips it)
+const API = import.meta.url.replace(/\/src\/[^/]*$/, '') .replace(/^[a-z]+:\/\/[^/]+/, '') + '/api/make3d';
 
 let availability = null;
 export async function modelServiceAvailable() {
