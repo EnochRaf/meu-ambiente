@@ -71,14 +71,18 @@ export function createLampShadows(renderer, { size = 512 } = {}) {
     count = Math.min(count, MAX_SHADOW_LAMPS);
     lampUniforms.uLampShadowCount.value = count;
     if (!count) return;
+    // Everything swapped or hidden here is put back in `finally`: a failure half
+    // way must never leave the room in distance materials, hidden, or drawing
+    // into the atlas instead of the screen (a frozen view until a reload).
     const swapped = [], hidden = [];
+    const bg = scene.background, fog = scene.fog, auto = renderer.autoClear, alpha = renderer.getClearAlpha(), shadowAuto = renderer.shadowMap.enabled;
+    renderer.getClearColor(clear);
+    try {
     scene.traverseVisible((o) => {
       if (casts(o)) { swapped.push([o, o.material]); o.material = Array.isArray(o.material) ? o.material.map(distFor) : distFor(o.material); }
       else if (o.isMesh || o.isSprite || o.isLine || o.isPoints) hidden.push(o);
     });
     for (const o of hidden) o.visible = false;
-    const bg = scene.background, fog = scene.fog, auto = renderer.autoClear, alpha = renderer.getClearAlpha(), shadowAuto = renderer.shadowMap.enabled;
-    renderer.getClearColor(clear);
     scene.background = null; scene.fog = null; renderer.autoClear = true; renderer.shadowMap.enabled = false;
     renderer.setClearColor(far, 1);
     for (let i = 0; i < count; i++) {
@@ -93,12 +97,14 @@ export function createLampShadows(renderer, { size = 512 } = {}) {
       unfold.render(renderer);
       renderer.autoClear = true;
     }
-    atlas.scissorTest = false;
-    renderer.setRenderTarget(null);
-    renderer.setClearColor(clear, alpha); renderer.autoClear = auto; renderer.shadowMap.enabled = shadowAuto;
-    scene.background = bg; scene.fog = fog;
-    for (const [o, m] of swapped) o.material = m;
-    for (const o of hidden) o.visible = true;
+    } finally {
+      atlas.scissorTest = false;
+      renderer.setRenderTarget(null);
+      renderer.setClearColor(clear, alpha); renderer.autoClear = auto; renderer.shadowMap.enabled = shadowAuto;
+      scene.background = bg; scene.fog = fog;
+      for (const [o, m] of swapped) o.material = m;
+      for (const o of hidden) o.visible = true;
+    }
   }
   return { update, atlas, dispose() { cubeRT.dispose(); atlas.dispose(); } };
 }

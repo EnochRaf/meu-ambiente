@@ -88,11 +88,14 @@ export function createFloorReflection() {
     const was = hide.map((x) => x.visible); hide.forEach((x) => { x.visible = false; });
     // (a pending shadow-map update is done here and then reused by the main view)
     const prevTarget = renderer.getRenderTarget();
-    onCamera?.(virtual); // e.g. re-express view-space uniforms for the mirror camera
-    renderer.setRenderTarget(target); renderer.clear(); renderer.render(scene, virtual);
-    renderer.setRenderTarget(prevTarget);
-    onCamera?.(camera);
-    hide.forEach((x, i) => { x.visible = was[i]; });
+    try {
+      onCamera?.(virtual); // e.g. re-express view-space uniforms for the mirror camera
+      renderer.setRenderTarget(target); renderer.clear(); renderer.render(scene, virtual);
+    } finally { // put back whatever happens, or the floor stays in the mirror's state
+      renderer.setRenderTarget(prevTarget);
+      onCamera?.(camera);
+      hide.forEach((x, i) => { x.visible = was[i]; });
+    }
     return true;
   }
   return { target, uniforms, patch, update, virtual, dispose() { target.dispose(); depth.dispose(); } };

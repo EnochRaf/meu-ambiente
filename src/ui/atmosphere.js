@@ -8,6 +8,7 @@ import { atmoName, atmoTip, viewName, viewTip } from '../i18n/names.js';
 import { activeRoom } from '../state.js';
 import { ATMOSPHERES, ATMOSPHERE_BY_ID, lampLevelFor } from '../atmospheres.js';
 import { VIEW_IDS } from '../views.js';
+import { report } from '../report.js';
 
 const TIME_WORDS = [[0.5, 'morning'], [1.5, 'midday'], [2.35, 'evening'], [9, 'night']];
 const lampWord = (v) => t(`lamps.${v < 0.04 ? 'off' : v < 0.35 ? 'dim' : v < 0.75 ? 'soft' : v < 1.15 ? 'warm' : 'bright'}`);
@@ -28,10 +29,13 @@ export function atmosphereDrawer(ctx) {
     timer = setTimeout(function attempt() {
       if (!ctx.isOpen('atmosphere')) return;
       if (!scene.idle && !scene.converged) { timer = setTimeout(attempt, 400); return; }
-      const urls = scene.previews(ATMOSPHERES.map((a) => ({ time: a.time, atmosphere: a.id, lamps: a.lamps })), { width: 300, height: 210 });
-      pics = Object.fromEntries(ATMOSPHERES.map((a, i) => [a.id, urls[i]]));
+      let urls = [];
+      try { urls = scene.previews(ATMOSPHERES.map((a) => ({ time: a.time, atmosphere: a.id, lamps: a.lamps })), { width: 300, height: 210 }); }
+      catch (err) { report('atmosphere previews', err); }
+      pics = Object.fromEntries(ATMOSPHERES.map((a, i) => [a.id, urls[i] || '']));
       picSig = sigOf(store.get());
-      for (const a of ATMOSPHERES) { const img = document.querySelector(`#atmo-picks [data-atmo="${a.id}"] img`); if (img && pics[a.id]) img.src = pics[a.id]; }
+      // a picture that could not be drawn leaves the card with its colours, never a broken image
+      for (const a of ATMOSPHERES) { const img = document.querySelector(`#atmo-picks [data-atmo="${a.id}"] img`); if (img && pics[a.id]) { img.src = pics[a.id]; img.style.background = ''; } }
     }, 700);
   }
 
@@ -44,7 +48,7 @@ export function atmosphereDrawer(ctx) {
       schedule(project);
       const card = (a) => el('button', { class: 'pick' + (a.id === project.atmosphere ? ' on' : ''), 'data-atmo': a.id, role: 'radio', 'aria-checked': a.id === project.atmosphere, tip: [atmoName(a), atmoTip(a)],
         onclick: () => store.update((p) => { p.atmosphere = a.id; p.time = a.time; p.lamps = a.lamps; }) },
-        el('img', { class: 'pic', alt: '', src: pics[a.id] || '', style: pics[a.id] ? '' : `background:linear-gradient(160deg, ${a.palette.top}, ${a.palette.bottom})` }),
+        el('img', { class: 'pic', alt: '', src: pics[a.id] || undefined, style: pics[a.id] ? '' : `background:linear-gradient(160deg, ${a.palette.top}, ${a.palette.bottom})` }),
         el('b', {}, atmoName(a)), el('small', {}, atmoTip(a)));
       return [
         el('div', { class: 'eyebrow' }, t('nav.atmosphere')),

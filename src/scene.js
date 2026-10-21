@@ -34,6 +34,7 @@ import { pendingModels } from './models.js';
 import { createGrade } from './grade.js';
 import { createFloorReflection } from './reflect.js';
 import { Q, setQuality, loadQuality, saveQuality, QUALITY } from './quality.js';
+import { report } from './report.js';
 
 export { wallPose, wallSegments, TIME_LABELS };
 const ACCENT = '#2563eb', OK = '#22c55e', BAD = '#ef4444';
@@ -177,8 +178,7 @@ export function createScene(container) {
   ao.render = (...args) => {
     const off = [];
     scene.traverse((o) => { if (o.visible && (o.userData.hidden || o.userData.noAO || o.userData.blob || o.isSprite || (o.isMesh && o.material?.transparent))) { o.visible = false; off.push(o); } });
-    aoRender(...args);
-    for (const o of off) o.visible = true;
+    try { aoRender(...args); } finally { for (const o of off) o.visible = true; }
   };
   const aoSetSize = ao.setSize.bind(ao);
   ao.setSize = (w, h) => aoSetSize(Math.ceil(w * Q.aoScale), Math.ceil(h * Q.aoScale));
@@ -536,7 +536,7 @@ export function createScene(container) {
     // glow only on genuinely bright light: lamps, bulbs, sun glints
     bloom.threshold = 0.95 + 1.6 * (1 - night); bloom.strength = 0.08 + 0.26 * Math.min(1.2, L.lampLevel) * (L.bloomK ?? 1); bloom.radius = 0.5;
     applyViewLight();
-    for (const rec of itemMeshes.values()) applyGlow(rec.group);
+    for (const rec of itemMeshes.values()) { try { applyGlow(rec.group); } catch (err) { report('lamp glow', err); } }
     const ext = c.d * 0.85 + 1.2;
     Object.assign(sun.shadow.camera, { left: -ext, right: ext, top: ext, bottom: -ext, near: 0.5, far: c.d * 6 + 30 });
     sun.shadow.camera.updateProjectionMatrix();
@@ -695,6 +695,16 @@ export function createScene(container) {
   }
   function present() { copyQuad.material.uniforms.tSrc.value = accum.texture; copyQuad.render(renderer); }
 
+  // a frame that throws is reported and skipped, never the end of the loop
+  function drawSafely(k) {
+    try { renderFrame(k); }
+    catch (err) {
+      report('drawing the room', err);
+      // start the next frame from a clean slate: drawing to the screen, everything to be redone
+      try { renderer.setRenderTarget(null); renderer.autoClear = true; } catch {}
+      shadowsDirty = true; lampShadowsDirty = true; lampsDirty = true; sample = 0;
+    }
+  }
   // true once the resting view has been fully refined
   const converged = () => !accum || sample >= Q.samples;
   function frame(now) {
@@ -722,10 +732,10 @@ export function createScene(container) {
     if (moving || !accum) {
       sample = 0;
       govern(now);
-      renderFrame(0); stats.frames++;
+      drawSafely(0); stats.frames++;
     } else if (sample < Q.samples) {
       gov.last = 0; // refining frames are not counted by the governor
-      renderFrame(sample); sample++; stats.frames++; stats.refined++;
+      drawSafely(sample); sample++; stats.frames++; stats.refined++;
       if (sample === Q.samples) { placeSun(); shadowsDirty = true; } // the next moving frame starts from the true sun
     } else return; // refined and still: the canvas keeps the finished picture
     for (const fn of listeners) fn();
@@ -791,7 +801,7 @@ export function createScene(container) {
     // debug: lift the camera limits for inspection screenshots
     setFreeCamera(on) { freeCamera = on; controls.maxDistance = on ? 200 : 90; },
     // time of day (0 morning .. 3 night), atmosphere id or null, lamp level or null (follow daylight)
-    setLight(next) { const n = { time: next.time ?? 1, atmosphere: next.atmosphere ?? null, lamps: next.lamps ?? null }; if (JSON.stringify(n) === JSON.stringify(light)) return; light = n; applyTime(); invalidate(); },
+    setLight(next) { const n = { time: next.time ?? 1, atmosphere: next.atmosphere ?? null, lamps: next.lamps ?? null }; if (JSON.stringify(n) === JSON.stringify(light)) return; light = n; try { applyTime(); } catch (err) { report('change of light', err); } invalidate(); },
     setTime(t) { this.setLight({ ...light, time: t }); },
     get lampLevel() { return L.lampLevel; },
     setPreview, resetView, raycastFloor, raycastWalls, pick, pickItem,
@@ -828,20 +838,31 @@ export function createScene(container) {
     // Small pictures of the room as it is now under other lights (the atmosphere
     // chooser). All frames are drawn in one go and the real view is drawn last,
     // so the window never shows them.
+    // If one picture fails it comes back empty (the card keeps its colours), and
+    // the room is always put back as it was: a failure half way used to leave
+    // the scene on the first preview's light with refining switched off, so
+    // every later change of light went nowhere until a reload.
     previews(lights, { width = 360, height = 240 } = {}) {
       if (!room) return [];
       const keepLight = light, keepSel = selected, keepGrips = gripGroup.visible, keepAccum = accum;
-      selected = null; selection.show(false); gripGroup.visible = false; accum = null;
-      const crop = roomCrop(width / height), c = document.createElement('canvas'); c.width = width; c.height = height;
-      const g = c.getContext('2d'), out = [];
-      for (const l of lights) {
-        light = { time: l.time ?? 1, atmosphere: l.atmosphere ?? null, lamps: l.lamps ?? null }; applyTime();
-        renderFrame(0);
-        g.drawImage(canvas, crop.x, crop.y, crop.w, crop.h, 0, 0, width, height);
-        out.push(c.toDataURL('image/jpeg', 0.86));
+      const out = [];
+      try {
+        selected = null; selection.show(false); gripGroup.visible = false; accum = null;
+        const crop = roomCrop(width / height), c = document.createElement('canvas'); c.width = width; c.height = height;
+        const g = c.getContext('2d');
+        for (const l of lights) {
+          try {
+            light = { time: l.time ?? 1, atmosphere: l.atmosphere ?? null, lamps: l.lamps ?? null }; applyTime();
+            renderFrame(0);
+            g.drawImage(canvas, crop.x, crop.y, crop.w, crop.h, 0, 0, width, height);
+            out.push(c.toDataURL('image/jpeg', 0.86));
+          } catch (err) { report('atmosphere preview', err); out.push(''); }
+        }
+      } finally {
+        light = keepLight; accum = keepAccum; gripGroup.visible = keepGrips; selected = keepSel;
+        try { applyTime(); } catch (err) { report('light after previews', err); }
+        sample = 0; drawSafely(0); sample = 1;
       }
-      light = keepLight; applyTime(); accum = keepAccum; gripGroup.visible = keepGrips; selected = keepSel;
-      sample = 0; renderFrame(0); sample = 1;
       return out;
     },
     // a full-quality still of the current view

@@ -8,8 +8,10 @@ import { t } from './i18n/index.js';
 import { roomName } from './i18n/names.js';
 import { customStore, makeCustomDef } from './customItems.js';
 import { shrinkModelBlob, SHRINK_ABOVE } from './glbTextures.js';
+import { report, watchUncaught } from './report.js';
 
 async function boot() {
+  watchUncaught();
   let project = loadLocal() || defaultProject();
   const code = readShareHash();
   if (code) {
@@ -59,8 +61,9 @@ async function boot() {
 
   let saveTimer = 0;
   const sync = (p) => {
-    scene.setLight({ time: p.time, atmosphere: p.atmosphere, lamps: p.lamps });
-    scene.setRoom(activeRoom(p), DEFS);
+    // the light and the room are separate: a failure in one must not hold up the other
+    try { scene.setLight({ time: p.time, atmosphere: p.atmosphere, lamps: p.lamps }); } catch (err) { report('light', err); }
+    try { scene.setRoom(activeRoom(p), DEFS); } catch (err) { report('room', err); }
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => saveLocal(p), 150);
   };
