@@ -37,3 +37,24 @@ test('fal’s reasons read as one short line', () => {
   assert.equal(falReason(null, null), '');
   assert.ok(falReason(null, 'x'.repeat(500)).length <= 240);
 });
+
+test('the service list: Hunyuan3D v3 first, Trellis 2 when it fails', async () => {
+  const saved = { ...process.env };
+  process.env.FAL_KEY = 'test-key'; delete process.env.MAKE3D_PROVIDER; delete process.env.MAKE3D_MODEL; delete process.env.MAKE3D_FALLBACK;
+  try {
+    const { provider, default: handler } = await import('../api/make3d.js');
+    const p = provider();
+    assert.deepEqual(p.models(), ['fal-ai/hunyuan3d-v3/image-to-3d', 'fal-ai/trellis-2']);
+    assert.equal(p.model(0), 'fal-ai/hunyuan3d-v3/image-to-3d');
+    assert.equal(p.model(1), 'fal-ai/trellis-2');
+    assert.equal(p.model(9), 'fal-ai/trellis-2'); // past the end: the last one
+    assert.deepEqual(p.input('data:x', 'fal-ai/trellis-2'), { image_url: 'data:x', resolution: 1024, texture_size: 1024, decimation_target: 120000 });
+    assert.equal(p.input('data:x', p.model(0)).input_image_url, 'data:x');
+    process.env.MAKE3D_FALLBACK = '';
+    assert.deepEqual(p.models(), ['fal-ai/hunyuan3d-v3/image-to-3d']); // fallbacks can be turned off
+    delete process.env.MAKE3D_FALLBACK;
+    let body = '';
+    await handler({ method: 'GET', url: '/api/make3d', headers: {} }, { writeHead() {}, end(b) { body = b; } });
+    assert.deepEqual(JSON.parse(body), { available: true, provider: 'fal', tiers: 2 });
+  } finally { process.env = saved; }
+});

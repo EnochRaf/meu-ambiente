@@ -306,6 +306,7 @@
  "photo.model.queued": "Waiting for a turn…",
  "photo.model.running": "Building…",
  "photo.model.sending": "Sending…",
+ "photo.model.switching": "Trying another 3D service…",
  "photo.modelDone": "Full 3D model ready. Its own proportions set the depth and height; turn it in the room to see every side.",
  "photo.modelFailed": "The model could not be made this time. The photo version is still here.",
  "photo.modelLimit": "Today’s allowance of full models is used up. Try again tomorrow.",

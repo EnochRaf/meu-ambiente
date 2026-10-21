@@ -248,7 +248,7 @@ export function setupPhotoDialog({ thumbs, toast, onAdded }) {
     $('#ph-save').disabled = true; // nothing gets added while the model is on its way
     const sig = depthSig(), t0 = performance.now();
     // where each stage sits on the ring, and how long it usually takes
-    const STAGES = { sending: [0, 0.06, 4], queued: [0.06, 0.18, 20], running: [0.18, 0.9, 75], downloading: [0.9, 0.98, 8] };
+    const STAGES = { sending: [0, 0.06, 4], switching: [0.06, 0.12, 6], queued: [0.06, 0.18, 20], running: [0.18, 0.9, 75], downloading: [0.9, 0.98, 8] };
     let stage = 'sending', stageAt = t0;
     const tick = setInterval(() => { const [a, b, secs] = STAGES[stage] || [0.9, 0.98, 8]; const f = 1 - Math.exp(-((performance.now() - stageAt) / 1000) / secs * 2.2); setProgress(a + (b - a) * f); }, 250);
     setModelState('working', t('photo.model.sending')); setProgress(0.01);

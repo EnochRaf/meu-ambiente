@@ -306,6 +306,7 @@
  "photo.model.queued": "Aguardando a vez…",
  "photo.model.running": "Construindo…",
  "photo.model.sending": "Enviando…",
+ "photo.model.switching": "Tentando outro serviço 3D…",
  "photo.modelDone": "Modelo 3D completo pronto. As proporções dele definem a profundidade e a altura; gire-o no ambiente para ver todos os lados.",
  "photo.modelFailed": "Não foi possível criar o modelo desta vez. A versão da foto continua aqui.",
  "photo.modelLimit": "A cota de hoje de modelos completos acabou. Tente de novo amanhã.",

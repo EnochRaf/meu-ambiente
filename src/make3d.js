@@ -8,10 +8,10 @@ import { shrinkModelBlob } from './glbTextures.js';
 // the route beside the site (a server function, not a file: built without new URL so the build's file scan skips it)
 const API = import.meta.url.replace(/\/src\/[^/]*$/, '') .replace(/^[a-z]+:\/\/[^/]+/, '') + '/api/make3d';
 
-let availability = null;
+let availability = null, tiers = 1;
 export async function modelServiceAvailable() {
   if (availability !== null) return availability;
-  try { const r = await fetch(API, { cache: 'no-store' }); const j = await r.json(); availability = !!j.available; }
+  try { const r = await fetch(API, { cache: 'no-store' }); const j = await r.json(); availability = !!j.available; tiers = Math.max(1, j.tiers | 0 || 1); }
   catch { availability = false; }
   return availability;
 }
@@ -55,11 +55,27 @@ async function download(id, url, signal) {
 
 export class ModelError extends Error { constructor(code, message) { super(message || code); this.code = code; } }
 
-// cutout: a PNG blob with a clear background -> a GLB blob
+// cutout: a PNG blob with a clear background -> a GLB blob. The site may offer
+// more than one 3D service (tiers): when one fails on its own side (a partner
+// service down, a job that errors), the next is tried with the same picture.
+// Limits, cancelling and a photo that is too large are not worth a second try.
 export async function makeModel(cutout, onStatus = () => {}, { signal } = {}) {
   onStatus('sending');
+  await modelServiceAvailable();
   const image = await fitForUpload(cutout);
-  const start = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image }), signal });
+  for (let tier = 0; ; tier++) {
+    try { return await attempt(image, tier, onStatus, signal); }
+    catch (err) {
+      const retry = err instanceof ModelError && err.code === 'failed' && err.message !== 'photo too large' && !signal?.aborted && tier + 1 < tiers;
+      if (!retry) throw err;
+      console.warn(`3D service ${tier + 1} failed (${err.message}); trying the next one`);
+      onStatus('switching');
+    }
+  }
+}
+
+async function attempt(image, tier, onStatus, signal) {
+  const start = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image, tier }), signal });
   if (start.status === 429) throw new ModelError('limit');
   if (start.status === 503) throw new ModelError('unavailable');
   if (start.status === 413) throw new ModelError('failed', 'photo too large');

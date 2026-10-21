@@ -12,6 +12,9 @@
 //   FAL_KEY          the fal.ai key (https://fal.ai/dashboard/keys)
 //   MAKE3D_MODEL     the fal endpoint; default fal-ai/hunyuan3d-v3/image-to-3d (PBR, 120k faces,
 //                    about $0.68 a piece); fal-ai/hunyuan3d/v2 (textured, about $0.5) also works
+//   MAKE3D_FALLBACK  endpoints to try in turn when that one fails on the provider's side
+//                    (comma separated; default fal-ai/trellis-2, run by fal itself, about $0.30;
+//                    Hunyuan3D v3 is a partner model that fal passes on to Tencent, which can be down)
 //   MAKE3D_DAILY_CAP how many generations one server instance accepts per day (default 40)
 //   MAKE3D_IP_CAP    how many one address may start per day (default 6)
 // The caps live in the instance's memory: enough to stop a loop or a prank on a
@@ -61,24 +64,27 @@ export function falReason(type, error) {
 // ---- providers -------------------------------------------------------------------------
 // each: submit(dataUrl) -> id, status(id) -> { state: 'queued'|'running'|'done'|'failed', url?, detail? }
 const fal = {
-  model: () => process.env.MAKE3D_MODEL || 'fal-ai/hunyuan3d-v3/image-to-3d',
+  // the endpoints in the order they are tried: the browser asks for the next one when one fails
+  models: () => [process.env.MAKE3D_MODEL || 'fal-ai/hunyuan3d-v3/image-to-3d', ...(process.env.MAKE3D_FALLBACK ?? 'fal-ai/trellis-2').split(',').map((m) => m.trim()).filter(Boolean)],
+  model(tier = 0) { const all = this.models(); return all[Math.min(all.length - 1, Math.max(0, tier | 0))]; },
   // what each endpoint wants besides the picture
-  input(dataUrl) {
-    const m = this.model();
+  input(dataUrl, m = this.model()) {
     if (/hunyuan3d-v3/.test(m)) return { input_image_url: dataUrl, enable_pbr: true, face_count: 120000, generate_type: 'Normal' };
+    if (/trellis-2/.test(m)) return { image_url: dataUrl, resolution: 1024, texture_size: 1024, decimation_target: 120000 };
     if (/hunyuan3d\/v2/.test(m)) return { input_image_url: dataUrl, textured_mesh: true };
     return { input_image_url: dataUrl, image_url: dataUrl };
   },
   headers: () => ({ Authorization: `Key ${process.env.FAL_KEY}`, 'Content-Type': 'application/json' }),
-  async submit(dataUrl) {
-    const r = await fetch(`${FAL_QUEUE}${this.model()}`, { method: 'POST', headers: this.headers(), body: JSON.stringify(this.input(dataUrl)) });
+  async submit(dataUrl, tier = 0) {
+    const m = this.model(tier);
+    const r = await fetch(`${FAL_QUEUE}${m}`, { method: 'POST', headers: this.headers(), body: JSON.stringify(this.input(dataUrl, m)) });
     if (!r.ok) throw new Error(`provider ${r.status}: ${(await r.text()).slice(0, 200)}`);
     const j = await r.json();
     // the job's id for the browser is fal's own result address (fal says to use it rather than build one)
-    return jobId(j.response_url || `${FAL_QUEUE}${this.app()}/requests/${j.request_id}`);
+    return jobId(j.response_url || `${FAL_QUEUE}${this.app(m)}/requests/${j.request_id}`);
   },
   // status and result live under the app id (owner/app), whatever subpath the endpoint has
-  app() { return this.model().split('/').slice(0, 2).join('/'); },
+  app(m = this.model()) { return m.split('/').slice(0, 2).join('/'); },
   async status(id) {
     const base = resultUrl(id, this.app());
     const s = await fetch(`${base}/status`, { headers: this.headers() });
@@ -124,8 +130,8 @@ export function provider() {
 export const available = () => !!provider();
 
 // ---- the handler -------------------------------------------------------------------------
-// GET  /api/make3d                -> { available }
-// POST /api/make3d { image }      -> { id }                 (image: a data: URL of a PNG)
+// GET  /api/make3d                -> { available, tiers }   (tiers: how many endpoints can be tried in turn)
+// POST /api/make3d { image, tier? } -> { id }               (image: a data: URL of a PNG; tier: 0 first, then the fallbacks)
 // GET  /api/make3d?id=…           -> { state, position?, detail?, url? }  (url: the provider's file, once done;
 //                                    the browser downloads it from there, since a function may send at most 4.5 MB)
 // GET  /api/make3d?file=…         -> the GLB (the fallback: the mock and local work, where there is no size cap)
@@ -141,14 +147,15 @@ const ipOf = (req) => (req.headers['x-forwarded-for'] || '').split(',')[0].trim(
 export default async function handler(req, res) {
   const url = new URL(req.url, 'http://x'), p = provider();
   try {
-    if (req.method === 'GET' && !url.search) return json(res, 200, { available: !!p, provider: p === mock ? 'mock' : p ? 'fal' : null });
+    if (req.method === 'GET' && !url.search) return json(res, 200, { available: !!p, provider: p === mock ? 'mock' : p ? 'fal' : null, tiers: p?.models ? p.models().length : p ? 1 : 0 });
     if (!p) return json(res, 503, { error: 'not configured' });
     if (req.method === 'POST') {
       const body = await readBody(req);
       const image = typeof body.image === 'string' ? body.image : '';
       if (!/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(image) || image.length > MAX_IMAGE * 1.37) return json(res, 400, { error: 'send a PNG as a data URL' });
       if (!allow(ipOf(req))) return json(res, 429, { error: 'limit reached for today' });
-      const id = await p.submit(image);
+      const tier = Number.isInteger(body.tier) && body.tier >= 0 ? body.tier : 0;
+      const id = await p.submit(image, tier);
       return json(res, 202, { id });
     }
     if (req.method === 'GET' && url.searchParams.get('id')) return json(res, 200, await p.status(url.searchParams.get('id')));
