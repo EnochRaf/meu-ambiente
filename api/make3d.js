@@ -31,6 +31,33 @@ function allow(ip) {
   return true;
 }
 
+// ---- fal helpers (pure, tested in test/make3d.test.js) ------------------------------------
+export const FAL_QUEUE = 'https://queue.fal.run/';
+// The browser holds fal's result address as the job id (base64url), so nothing
+// needs remembering between calls. It comes back from the browser, and the key
+// goes with every request made to it, so only a plain queue.fal.run path is
+// accepted; anything else is treated as a bare request id under our own app.
+export const jobId = (url) => Buffer.from(url, 'utf8').toString('base64url');
+export function resultUrl(id, app) {
+  const s = String(id || '');
+  if (/^[A-Za-z0-9_-]+$/.test(s)) {
+    const url = Buffer.from(s, 'base64url').toString('utf8');
+    if (url.startsWith(FAL_QUEUE) && /^[A-Za-z0-9_-]+(\/[A-Za-z0-9_.-]+)*\/requests\/[A-Za-z0-9_-]+$/.test(url.slice(FAL_QUEUE.length)) && !url.includes('..')) return url;
+  }
+  return `${FAL_QUEUE}${app}/requests/${encodeURIComponent(s)}`;
+}
+// where the GLB is in a result, whichever endpoint made it
+export const modelUrl = (out) => out?.model_glb?.url || out?.model_urls?.glb?.url || out?.model_mesh?.url || out?.model?.url || out?.mesh?.url || null;
+// fal's reasons come as text, or as a list of { msg, type } (validation)
+export function falReason(type, error) {
+  let text = '';
+  if (typeof error === 'string') text = error;
+  else if (Array.isArray(error)) text = error.map((e) => e?.msg || e?.message || (typeof e === 'string' ? e : '')).filter(Boolean).join('; ');
+  else if (error && typeof error === 'object') text = error.msg || error.message || '';
+  if (!text && !type) return '';
+  return (type && !text.toLowerCase().includes(String(type).toLowerCase()) ? `${type}: ` : '') + text.replace(/\s+/g, ' ').trim().slice(0, 240);
+}
+
 // ---- providers -------------------------------------------------------------------------
 // each: submit(dataUrl) -> id, status(id) -> { state: 'queued'|'running'|'done'|'failed', url?, detail? }
 const fal = {
@@ -44,15 +71,16 @@ const fal = {
   },
   headers: () => ({ Authorization: `Key ${process.env.FAL_KEY}`, 'Content-Type': 'application/json' }),
   async submit(dataUrl) {
-    const r = await fetch(`https://queue.fal.run/${this.model()}`, { method: 'POST', headers: this.headers(), body: JSON.stringify(this.input(dataUrl)) });
+    const r = await fetch(`${FAL_QUEUE}${this.model()}`, { method: 'POST', headers: this.headers(), body: JSON.stringify(this.input(dataUrl)) });
     if (!r.ok) throw new Error(`provider ${r.status}: ${(await r.text()).slice(0, 200)}`);
     const j = await r.json();
-    return j.request_id;
+    // the job's id for the browser is fal's own result address (fal says to use it rather than build one)
+    return jobId(j.response_url || `${FAL_QUEUE}${this.app()}/requests/${j.request_id}`);
   },
   // status and result live under the app id (owner/app), whatever subpath the endpoint has
   app() { return this.model().split('/').slice(0, 2).join('/'); },
   async status(id) {
-    const base = `https://queue.fal.run/${this.app()}/requests/${encodeURIComponent(id)}`;
+    const base = resultUrl(id, this.app());
     const s = await fetch(`${base}/status`, { headers: this.headers() });
     if (s.status === 404) return { state: 'failed', detail: 'unknown job' };
     const j = await s.json().catch(() => ({}));
@@ -60,10 +88,14 @@ const fal = {
     if (j.status === 'IN_QUEUE') return { state: 'queued', position: j.queue_position };
     if (j.status === 'IN_PROGRESS') return { state: 'running' };
     if (j.status !== 'COMPLETED') return { state: 'failed', detail: j.status || `status ${s.status}` };
+    // a job that failed also ends COMPLETED, with the reason beside it
+    if (j.error) { console.error('make3d job failed', j.error_type, j.error); return { state: 'failed', detail: falReason(j.error_type, j.error) }; }
     const r = await fetch(base, { headers: this.headers() });
     const out = await r.json().catch(() => ({}));
-    const url = out.model_glb?.url || out.model_urls?.glb?.url || out.model_mesh?.url || out.model?.url || out.mesh?.url;
-    return url ? { state: 'done', url } : { state: 'failed', detail: 'no model in the result' };
+    const url = modelUrl(out);
+    if (url) return { state: 'done', url };
+    console.error('make3d result without a model', r.status, JSON.stringify(out).slice(0, 500));
+    return { state: 'failed', detail: falReason(null, out.detail ?? out.error) || (r.ok ? 'no model in the result' : `result ${r.status}`) };
   },
   async fetchModel(url) { return fetch(url); },
 };
