@@ -71,8 +71,8 @@ checks, screenshots). How it all works is in [docs/DEVELOPMENT.md](docs/DEVELOPM
 
 The optional full 3D model needs a [fal.ai](https://fal.ai) key: set `FAL_KEY`
 (locally in the shell before `npm start`, on Vercel under Environment
-Variables). Without it the button does not appear; locally without a key a
-mock serves `tmp/mock-model.glb` if that file exists.
+Variables). Without it the button does not appear. For local work without a key,
+`MAKE3D_PROVIDER=mock npm start` serves `tmp/mock-model.glb` instead.
 
 The site is static. On Vercel, `vercel.json` sets everything: it installs
 nothing, runs `npm run build` and publishes `dist/`.

@@ -6,7 +6,7 @@
 //
 // Runs as a Vercel function (api/make3d.js) and inside scripts/serve.mjs for
 // local work. Everything comes from the environment:
-//   MAKE3D_PROVIDER  fal (default when FAL_KEY is set) | mock (serves tmp/mock-model.glb)
+//   MAKE3D_PROVIDER  fal (default when FAL_KEY is set) | mock (serves tmp/mock-model.glb; local work only)
 //   FAL_KEY          the fal.ai key (https://fal.ai/dashboard/keys)
 //   MAKE3D_MODEL     the fal endpoint; default fal-ai/hunyuan3d/v2 (textured, about $0.5 a piece)
 //   MAKE3D_DAILY_CAP how many generations one server instance accepts per day (default 40)
@@ -70,7 +70,8 @@ const mock = {
   },
 };
 export function provider() {
-  const want = process.env.MAKE3D_PROVIDER || (process.env.FAL_KEY ? 'fal' : 'mock');
+  // the mock only when asked for (local work); a deployment without a key offers nothing
+  const want = process.env.MAKE3D_PROVIDER || (process.env.FAL_KEY ? 'fal' : 'none');
   if (want === 'fal' && process.env.FAL_KEY) return fal;
   if (want === 'mock') return mock;
   return null;

@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node scripts/serve.mjs 8765",
+    "start": "MAKE3D_PROVIDER=${MAKE3D_PROVIDER:-${FAL_KEY:+fal}} node scripts/serve.mjs 8765",
     "build": "node scripts/build.mjs",
     "preview": "npm run build && node scripts/serve.mjs 8765 dist",
     "test": "node --test test/*.test.js"
