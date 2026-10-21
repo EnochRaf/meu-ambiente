@@ -1,8 +1,10 @@
 // Full 3D model from a photo: a small server step, because the models that
 // invent the back and sides of a piece are far too big for the browser. The
 // browser sends the cutout (a PNG with a clear background); this function hands
-// it to the provider, reports progress, and streams the finished GLB back so the
-// browser never talks to the provider directly (no key in the page, no CORS).
+// it to the provider and reports progress; the key stays here. The finished GLB
+// (about 20 MB) is too big for a Vercel function to send, so the browser fetches
+// it from the provider's file URL, which needs no key; this function streams it
+// only as a fallback (the mock, local work).
 //
 // Runs as a Vercel function (api/make3d.js) and inside scripts/serve.mjs for
 // local work. Everything comes from the environment:
@@ -92,8 +94,9 @@ export const available = () => !!provider();
 // ---- the handler -------------------------------------------------------------------------
 // GET  /api/make3d                -> { available }
 // POST /api/make3d { image }      -> { id }                 (image: a data: URL of a PNG)
-// GET  /api/make3d?id=…           -> { state, position?, detail? }
-// GET  /api/make3d?file=…         -> the GLB
+// GET  /api/make3d?id=…           -> { state, position?, detail?, url? }  (url: the provider's file, once done;
+//                                    the browser downloads it from there, since a function may send at most 4.5 MB)
+// GET  /api/make3d?file=…         -> the GLB (the fallback: the mock and local work, where there is no size cap)
 const json = (res, status, body) => { res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(body)); };
 async function readBody(req) {
   if (req.body !== undefined) return typeof req.body === 'string' ? JSON.parse(req.body) : req.body; // Vercel parses JSON bodies
