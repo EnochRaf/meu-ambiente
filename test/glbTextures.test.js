@@ -57,3 +57,20 @@ test('replacing images keeps the geometry byte for byte and realigns every view'
 test('not a GLB is refused', () => {
   assert.throws(() => readGlb(new Uint8Array(20).buffer), /not a GLB/);
 });
+
+test('textures stored as WebP through an extension still get their roles', () => {
+  const { json } = sample();
+  json.textures = json.textures.map((t) => ({ extensions: { EXT_texture_webp: { source: t.source } } }));
+  const roles = imageRoles(json);
+  assert.equal(roles.get(0), 'normal'); assert.equal(roles.get(1), 'colour'); assert.equal(roles.get(2), 'data');
+});
+
+test('a map that says metal all over is told apart from a mostly matt one', async () => {
+  const { metalShare, ALL_METAL } = await import('../src/glbTextures.js');
+  const px = (b, n = 64) => Uint8ClampedArray.from({ length: n * 4 }, (_, i) => (i % 4 === 2 ? b : 128));
+  assert.ok(metalShare(px(254)) >= ALL_METAL); // Trellis 2's leather sofa
+  assert.ok(metalShare(px(254), 0.5) < ALL_METAL); // a half-metallic factor brings it down
+  assert.ok(metalShare(px(20)) < ALL_METAL);
+  const mixed = new Uint8ClampedArray(64 * 4); for (let i = 0; i < 64; i++) mixed[i * 4 + 2] = i < 16 ? 255 : 0; // metal legs on a fabric chair
+  assert.ok(metalShare(mixed) < ALL_METAL);
+});

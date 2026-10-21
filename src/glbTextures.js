@@ -44,7 +44,9 @@ export function writeGlb(json, bin) {
 // What each image is for, from the materials that use it: 'normal', 'data'
 // (metal/roughness, occlusion: linear values) or 'colour'.
 export function imageRoles(json) {
-  const roles = new Map(), texSource = (ref) => ref && json.textures?.[ref.index]?.source;
+  // a texture names its image directly, or through an extension (Trellis 2 uses EXT_texture_webp)
+  const texSource = (ref) => { const tex = ref && json.textures?.[ref.index]; if (!tex) return undefined; const ext = tex.extensions || {}; return tex.source ?? ext.EXT_texture_webp?.source ?? ext.EXT_texture_avif?.source ?? ext.KHR_texture_basisu?.source; };
+  const roles = new Map();
   const mark = (ref, role) => { const s = texSource(ref); if (s === undefined) return; if (!roles.has(s) || role === 'normal') roles.set(s, role); };
   for (const m of json.materials || []) {
     mark(m.normalTexture, 'normal');
@@ -80,6 +82,17 @@ export function replaceImages({ json, bin }, replacements) {
   return { json: j, bin: out };
 }
 
+// How metallic a metal/roughness map says a material is, 0..1 (glTF keeps
+// metalness in blue; `scale` is the material's metallicFactor). At or above
+// ALL_METAL the piece claims to be metal all over, which a generator does by
+// mistake (Trellis 2) far more often than a photo shows a solid metal piece.
+export const ALL_METAL = 0.85;
+export function metalShare(pixels, scale = 1) {
+  let sum = 0, n = 0;
+  for (let i = 0; i < pixels.length; i += 4) { sum += pixels[i + 2]; n++; }
+  return n ? (sum / n / 255) * scale : 0;
+}
+
 // ---- in the browser ---------------------------------------------------------------------
 const toBlob = (canvas, type, quality) => new Promise((resolve) => canvas.toBlob(resolve, type, quality));
 
@@ -101,7 +114,7 @@ export async function shrinkModelBlob(blob, { maxSide = MAX_TEXTURE } = {}) {
     const type = role === 'normal' || role === 'colour-alpha' ? 'image/png' : 'image/jpeg';
     const out = await toBlob(c, type, 0.92);
     if (!out) continue;
-    replacements.set(i, { bytes: new Uint8Array(await out.arrayBuffer()), mimeType: type });
+    replacements.set(i, { bytes: new Uint8Array(await out.arrayBuffer()), mimeType: out.type || type }); // what the browser really wrote
   }
   if (!replacements.size) return blob;
   const next = replaceImages(glb, replacements);

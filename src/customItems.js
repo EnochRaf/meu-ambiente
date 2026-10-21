@@ -8,6 +8,7 @@ import { backgroundMask, cropBounds, bleedEdges, erodeMask, featherMaskRadius, d
 import { sampleGrid, normalizeDepth, reliefMesh, pillowDepth } from './relief.js';
 import { MATERIAL_BY_ID } from './materials.js';
 import { patchLamps } from './lamps.js';
+import { metalShare, ALL_METAL } from './glbTextures.js';
 
 const DB = 'roomsmith', STORE = 'customItems', MAX_SIDE = 1024, RELIEF_GRID = 160;
 export const CUSTOM_PREFIX = 'c_';
@@ -145,7 +146,7 @@ export function loadModelBlob(blob, key = blob) {
     root.traverse((o) => {
       if (!o.isMesh) return;
       o.castShadow = o.receiveShadow = true;
-      for (const m of Array.isArray(o.material) ? o.material : [o.material]) { if (m.map) m.map.anisotropy = 8; m.envMapIntensity = 1; if (m.transparent && m.opacity > 0.95) { m.transparent = false; m.alphaTest = 0.5; } patchLamps(m, null, '-model'); }
+      for (const m of Array.isArray(o.material) ? o.material : [o.material]) { if (m.map) m.map.anisotropy = 8; m.envMapIntensity = 1; if (m.transparent && m.opacity > 0.95) { m.transparent = false; m.alphaTest = 0.5; } notAllMetal(m); patchLamps(m, null, '-model'); }
     });
     const holder = new THREE.Group(); holder.add(root);
     return { scene: holder, size: [size.x, size.z, size.y] }; // width, depth, height in the model's units
@@ -154,6 +155,26 @@ export function loadModelBlob(blob, key = blob) {
   return pr;
 }
 export const forgetModel = (key) => parsed.delete(key);
+
+// Some generators mark a whole piece as metal (Trellis 2 writes the metal channel
+// at its maximum everywhere). Metal has no colour of its own and only mirrors the
+// room, so a leather sofa comes out as dark chrome. Furniture from a photo is
+// almost never solid metal: when the map says metal all over, the material is
+// treated as not metallic. Roughness, in the same texture, is kept.
+function notAllMetal(m) {
+  if (!(m.metalness > 0.5)) return;
+  let share = m.metalness;
+  const img = m.metalnessMap?.image;
+  if (img) {
+    try {
+      const c = document.createElement('canvas'); c.width = c.height = 32;
+      const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(img, 0, 0, 32, 32);
+      share = metalShare(g.getImageData(0, 0, 32, 32).data, m.metalness);
+    } catch { return; }
+  }
+  if (share < ALL_METAL) return;
+  m.metalness = 0; m.metalnessMap = null; m.needsUpdate = true;
+}
 export const modelProportions = async (blob) => (await loadModelBlob(blob)).size;
 
 // Generated textures come back darker and warmer than the photo they were made
