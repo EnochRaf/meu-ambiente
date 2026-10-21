@@ -215,6 +215,15 @@ body.ui-hidden .show-ui { opacity: 1; transform: none; pointer-events: auto; }
 .act-sep { width: 1px; height: 22px; background: var(--line); margin: 0 4px; }
 .recentre { position: fixed; right: 20px; bottom: 20px; z-index: 10; border: 0; display: inline-flex; align-items: center; gap: 7px; padding: 10px 15px; border-radius: 999px; font-weight: 700; font-size: 12.5px; color: var(--ink); background: var(--glass); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px); box-shadow: var(--shadow); }
 .recentre svg { width: 17px; height: 17px; }
+/* "made by" link: the same pill as Recentre, always on screen, just right of the side
+   panel; it glides with the panel as it opens, folds or hides (same widths, same timing) */
+.made-by { position: fixed; left: calc(var(--rail) + 20px); bottom: 20px; z-index: 10; display: inline-flex; align-items: center; gap: 8px; padding: 10px 15px; border-radius: 999px; font-weight: 700; font-size: 12.5px; color: var(--ink); text-decoration: none; background: var(--glass); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px); box-shadow: var(--shadow); transition: left .38s var(--ease), background .2s; }
+.made-by:hover { background: var(--paper); }
+.made-by:focus-visible { outline: 2px solid var(--mint); outline-offset: 2px; }
+.made-by .x-logo { width: 14px; height: 14px; fill: currentColor; stroke: none; }
+.made-by-label { font-weight: 600; color: var(--mute); }
+body.drawer-open .made-by { left: calc(var(--rail) + var(--drawer) + 20px); }
+body.ui-hidden .made-by, body.ui-hidden.drawer-open .made-by { left: 20px; transition: left .42s var(--ease), background .2s; }
 
 /* ---- the selected piece: a small toolbar beside it ---- */
 .ctx, .measure { position: fixed; left: 0; top: 0; z-index: 13; opacity: 0; pointer-events: none; transition: opacity .2s var(--ease); will-change: transform; }
@@ -242,6 +251,9 @@ body.ui-hidden .show-ui { opacity: 1; transform: none; pointer-events: auto; }
   .act span { display: none; } .act.primary span { display: inline; }
   .actions { top: 12px; right: 12px; }
   .recentre span { display: none; }
+  /* the open panel fills a phone's width: the link waits beside the icons, under the panel */
+  .made-by, body.drawer-open .made-by { left: calc(var(--rail) + 12px); bottom: 12px; padding: 9px 13px; }
+  body.ui-hidden .made-by, body.ui-hidden.drawer-open .made-by { left: 12px; }
 }
 
 /* ---- templates: gallery, confirm bar, save dialog ---- */

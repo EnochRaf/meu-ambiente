@@ -509,6 +509,8 @@
  "railing.metal": "Metal",
  "recentre": "Centralizar",
  "recentre.tip": "Voltar à visão geral do ambiente",
+ "madeBy": "feito por",
+ "madeBy.tip": "Rafael no X (@szbrafa)",
  "roomType.bathroom": "Banheiro",
  "roomType.bathroom.tip": "Banheira, chuveiro, vaso e pia",
  "roomType.bedroom": "Quarto",
