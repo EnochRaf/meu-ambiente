@@ -229,28 +229,48 @@ export function setupPhotoDialog({ thumbs, toast, onAdded }) {
   $('#ph-detect').onclick = detect;
   for (const id of ['w', 'd', 'h']) $(`#ph-${id}`).addEventListener('input', (e) => { S.dims[id] = parseFloat(e.target.value) || S.dims[id]; if (S.lockRatio && (id !== 'd' || usingModel())) syncRatio(id); renderScale(); });
   $('#ph-lock').addEventListener('change', (e) => { S.lockRatio = e.target.checked; if (S.lockRatio) syncRatio('w'); renderScale(); });
-  for (const b of document.querySelectorAll('#ph-variant [data-variant]')) b.onclick = () => { S.variant = b.dataset.variant; syncVariant(); if (S.lockRatio) syncRatio('w'); renderScale(); };
-  // the full 3D model: the one step that leaves the browser, so it only runs on this click
-  $('#ph-make-model').onclick = async () => {
+  for (const b of document.querySelectorAll('#ph-variant [data-variant]')) b.onclick = () => {
+    if (b.dataset.variant === 'model' && !S.model) { if (!S.modelBusy) makeFullModel(); return; } // the card is the button until there is a model
+    S.variant = b.dataset.variant; syncVariant(); if (S.lockRatio) syncRatio('w'); renderScale();
+  };
+  // The full 3D model: the one step that leaves the browser, so it only runs on a
+  // click. The card shows a ring filling over the expected minute (the service
+  // reports stages, not a percentage, so the ring follows the clock within each
+  // stage and never reaches the end until the model is really here).
+  const modelCard = $('#ph-var-model'), ring = modelCard.querySelector('.ring .bar'), pct = modelCard.querySelector('.pct'), modelLabel = $('#ph-model-label');
+  const setModelState = (state, label) => { modelCard.dataset.state = state; modelLabel.textContent = label; };
+  const setProgress = (f) => { const v = Math.max(0, Math.min(1, f)); ring.style.strokeDashoffset = (125.7 * (1 - v)).toFixed(1); pct.textContent = Math.round(v * 100) + '%'; };
+  const resetModelCard = () => { setModelState('idle', t('photo.makeModel')); setProgress(0); $('#ph-prev-model').removeAttribute('src'); };
+  async function makeFullModel() {
     if (!S.result || S.modelBusy) return;
-    const btn = $('#ph-make-model'), note = $('#ph-model-note');
-    S.modelBusy = true; btn.disabled = true; note.hidden = false; note.classList.remove('bad'); $('#ph-match-note').hidden = $('#ph-depth-note').hidden = true;
+    const note = $('#ph-model-note');
+    S.modelBusy = true; note.hidden = false; note.classList.remove('bad'); $('#ph-match-note').hidden = $('#ph-depth-note').hidden = true;
     $('#ph-save').disabled = true; // nothing gets added while the model is on its way
-    const sig = depthSig();
+    const sig = depthSig(), t0 = performance.now();
+    // where each stage sits on the ring, and how long it usually takes
+    const STAGES = { sending: [0, 0.06, 4], queued: [0.06, 0.18, 20], running: [0.18, 0.9, 75], downloading: [0.9, 0.98, 8] };
+    let stage = 'sending', stageAt = t0;
+    const tick = setInterval(() => { const [a, b, secs] = STAGES[stage] || [0.9, 0.98, 8]; const f = 1 - Math.exp(-((performance.now() - stageAt) / 1000) / secs * 2.2); setProgress(a + (b - a) * f); }, 250);
+    setModelState('working', t('photo.model.sending')); setProgress(0.01);
+    note.textContent = t('photo.makeModelHint');
     try {
-      const blob = await makeModel(await canvasToBlob(S.result.canvas), (state, position) => { note.textContent = t(`photo.model.${state}`, { n: position ?? '' }); });
+      const blob = await makeModel(await canvasToBlob(S.result.canvas), (state) => { if (state !== stage) { stage = state; stageAt = performance.now(); } modelLabel.textContent = t(`photo.model.${state}`); });
+      clearInterval(tick); setProgress(1);
       S.model = blob; S.modelFor = sig; S.modelProps = await modelProportions(blob);
-      $('#ph-var-model').disabled = false; S.variant = 'model';
+      S.variant = 'model';
+      setModelState('done', t('photo.modelVariant'));
       note.textContent = t('photo.modelDone');
       syncVariant(); if (S.lockRatio) syncRatio('w'); renderScale(); renderPreviews();
     } catch (err) {
+      clearInterval(tick);
       console.warn('full model failed:', err?.code, err?.message);
+      resetModelCard();
       note.textContent = t(err?.code === 'limit' ? 'photo.modelLimit' : 'photo.modelFailed') + (err?.message && err.message !== err.code ? ` (${err.message})` : '');
       note.classList.add('bad'); note.hidden = false;
-      syncVariant(); $('#ph-model-note').hidden = false;
+      syncVariant(); note.hidden = false;
     }
-    S.modelBusy = false; btn.disabled = false; $('#ph-save').disabled = false;
-  };
+    S.modelBusy = false; $('#ph-save').disabled = false;
+  }
   const aspect = () => S.result ? S.result.canvas.height / S.result.canvas.width : 1;
   const usingModel = () => S.variant === 'model' && S.model && S.modelProps;
   function syncRatio(from) {
@@ -360,7 +380,7 @@ export function setupPhotoDialog({ thumbs, toast, onAdded }) {
   function syncVariant() {
     for (const b of document.querySelectorAll('#ph-variant [data-variant]')) b.classList.toggle('on', b.dataset.variant === S.variant);
     $('#ph-dims').classList.toggle('dim', S.variant === '3d');
-    $('#ph-depth-note').hidden = S.variant !== 'photo'; $('#ph-match-note').hidden = S.variant !== '3d'; $('#ph-model-note').hidden = S.variant !== 'model' || !$('#ph-model-note').textContent;
+    $('#ph-depth-note').hidden = S.variant !== 'photo'; $('#ph-match-note').hidden = S.variant !== '3d'; $('#ph-model-note').hidden = (S.variant !== 'model' && !S.modelBusy) || !$('#ph-model-note').textContent;
   }
 
   // ---- steps -----------------------------------------------------------------------------
@@ -375,8 +395,8 @@ export function setupPhotoDialog({ thumbs, toast, onAdded }) {
       if (!$('#ph-name').value) $('#ph-name').value = S.name || '';
       $('#ph-detect-note').textContent = t('photo.shapeGuess', { kind: photoKindName(S.category).toLowerCase(), size: CLASSIFIER.size });
       ensureDepth();
-      if (S.model && S.modelFor !== depthSig()) { S.model = null; S.modelProps = null; $('#ph-var-model').disabled = true; $('#ph-prev-model').removeAttribute('src'); $('#ph-model-note').textContent = ''; if (S.variant === 'model') S.variant = 'photo'; syncVariant(); }
-      modelServiceAvailable().then((ok) => { $('#ph-model-row').hidden = !ok; });
+      if (S.model && S.modelFor !== depthSig()) { S.model = null; S.modelProps = null; resetModelCard(); $('#ph-model-note').textContent = ''; if (S.variant === 'model') S.variant = 'photo'; syncVariant(); }
+      modelServiceAvailable().then((ok) => { modelCard.hidden = !ok; });
     }
   }
   $('#ph-next1').onclick = () => show(2);
@@ -402,7 +422,7 @@ export function setupPhotoDialog({ thumbs, toast, onAdded }) {
       S = Object.assign(st, reset(), { aiAlpha: null, aiAngle: null, src: null, warnings: null, name: '' });
       dlg.classList.remove('has-photo'); $('#ph-file').value = ''; $('#ph-name').value = ''; $('#ph-warnings').replaceChildren(); $('#ph-next1').disabled = true;
       $('#ph-angle').value = 0; $('#ph-angle-v').textContent = `${num(0, 1)}°`; $('#ph-tol').value = 40; $('#ph-keep').checked = false; $('#ph-lock').checked = true; $('#ph-ai-note').textContent = '';
-      $('#ph-depth-note').textContent = ''; $('#ph-model-note').textContent = ''; $('#ph-var-model').disabled = true; $('#ph-prev-model').removeAttribute('src'); $('#ph-save').disabled = false; $('#ph-save').textContent = t('photo.save');
+      $('#ph-depth-note').textContent = ''; $('#ph-model-note').textContent = ''; resetModelCard(); $('#ph-save').disabled = false; $('#ph-save').textContent = t('photo.save');
       for (const b of document.querySelectorAll('#ph-mode [data-mode]')) b.classList.toggle('on', b.dataset.mode === 'quick');
       localise(); show(1); dlg.showModal();
     },

@@ -340,12 +340,29 @@ body.busy .drawer, body.busy .tour { opacity: .55; }
 .variants button { border: 0; background: var(--card); border-radius: 16px; padding: 6px 6px 10px; display: flex; flex-direction: column; align-items: center; gap: 7px; font-weight: 700; font-size: 12px; line-height: 1.25; color: var(--mute); box-shadow: 0 8px 18px -16px var(--lift); transition: transform .22s var(--ease), box-shadow .22s var(--ease), color .2s; }
 .variants button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 14px 24px -16px var(--lift); }
 .variants button.on { color: var(--ink); box-shadow: 0 0 0 2px var(--mint), 0 10px 20px -16px var(--lift); }
+.variants button.on:hover { box-shadow: 0 0 0 2px var(--mint), 0 14px 24px -16px var(--lift); }
 .variants button:disabled { opacity: .45; }
 .variants img { width: 100%; height: 78px; object-fit: contain; background: var(--pic-glow); border-radius: 11px; }
-.make-row { display: flex; flex-direction: column; gap: 8px; margin-top: 12px !important; padding-top: 12px; border-top: 1px solid var(--line); }
-.make-row .btn { align-self: flex-start; }
-.make-row .btn svg { width: 16px; height: 16px; }
 #ph-model-note.bad { color: var(--danger); }
+/* the third card is the control for the full model: idle (a cube), working (a ring
+   that fills over the expected minute), done (the picture) */
+.variants .make .face { position: relative; width: 100%; height: 78px; border-radius: 11px; background: var(--pic-glow); display: grid; place-items: center; overflow: hidden; }
+.variants .make .face > * { grid-area: 1 / 1; }
+.variants .make img { display: none; }
+.variants .make .cube { width: 30px; height: 30px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; opacity: .75; }
+.variants .make .ring { display: none; width: 52px; height: 52px; transform: rotate(-90deg); }
+.variants .make .ring circle { fill: none; stroke-width: 4; }
+.variants .make .ring .track { stroke: rgb(var(--tint) / .14); }
+.variants .make .ring .bar { stroke: var(--mint); stroke-linecap: round; stroke-dasharray: 125.7; stroke-dashoffset: 125.7; transition: stroke-dashoffset .6s linear; }
+.variants .make .pct { display: none; font-size: 12px; font-weight: 800; color: var(--ink); letter-spacing: .01em; }
+.variants .make[data-state="idle"] { border: 1.5px dashed rgb(var(--tint) / .28); background: transparent; }
+.variants .make[data-state="idle"]:hover { border-color: var(--mint); color: var(--ink); }
+.variants .make[data-state="working"] { cursor: progress; }
+.variants .make[data-state="working"] .cube { display: none; }
+.variants .make[data-state="working"] .ring, .variants .make[data-state="working"] .pct { display: block; }
+.variants .make[data-state="done"] .cube, .variants .make[data-state="done"] .face { background: transparent; }
+.variants .make[data-state="done"] .cube { display: none; }
+.variants .make[data-state="done"] img { display: block; width: 100%; height: 78px; object-fit: contain; }
 #ph-dims.dim { opacity: .45; pointer-events: none; }
 
 /* narrow windows (a phone, a side pane): the dialog's columns stack; on the

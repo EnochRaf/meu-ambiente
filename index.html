@@ -224,15 +224,19 @@
         <div id="ph-variant" class="variants">
           <button data-variant="photo" class="on"><img id="ph-prev-photo" alt=""><span data-i18n="photo.cutoutVariant">Photo cutout</span></button>
           <button data-variant="3d" id="ph-var-3d"><img id="ph-prev-3d" alt=""><span data-i18n="photo.matchedVariant">Matched 3D</span></button>
-          <button data-variant="model" id="ph-var-model" disabled><img id="ph-prev-model" alt=""><span data-i18n="photo.modelVariant">Full 3D model</span></button>
+          <button data-variant="model" id="ph-var-model" class="make" data-state="idle" hidden>
+            <span class="face">
+              <img id="ph-prev-model" alt="">
+              <svg class="cube"><use href="#i-cube"/></svg>
+              <svg class="ring" viewBox="0 0 48 48"><circle class="track" cx="24" cy="24" r="20"/><circle class="bar" cx="24" cy="24" r="20"/></svg>
+              <b class="pct"></b>
+            </span>
+            <span id="ph-model-label" data-i18n="photo.makeModel">Make the full 3D model</span>
+          </button>
         </div>
         <p id="ph-depth-note" class="muted"></p>
         <p id="ph-match-note" class="muted" hidden></p>
         <p id="ph-model-note" class="muted" hidden></p>
-        <div id="ph-model-row" class="make-row" hidden>
-          <button id="ph-make-model" class="btn dark"><svg><use href="#i-cube"/></svg><span data-i18n="photo.makeModel">Make the full 3D model</span></button>
-          <p class="muted" data-i18n="photo.makeModelHint">Sends the cutout to a 3D service and takes about a minute. The only step that leaves your browser.</p>
-        </div>
       </div>
     </div>
     <div class="row right"><button id="ph-back3" class="btn" data-i18n="action.back">Back</button><button id="ph-save" class="btn primary" data-i18n="photo.save">Add to my items</button></div>
